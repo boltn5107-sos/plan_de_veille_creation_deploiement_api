@@ -1,0 +1,73 @@
+PAGES 2
+
+===== PAGE 1 =====
+1/2 
+ 
+Veille  
+Introduction Aux Api Et Architecture Rest 
+Avec FastAPI (Python)  
+ 
+Contenu 
+I. Introduction générale aux API 
+1.1. Définition d'une API 
+1.2. Rôle et importance des API 
+1.3. Domaines d'utilisation des API 
+1.4. Avantages et limites des API 
+II. Classification des API 
+2.1. Les styles et technologies d'API Web 
+2.2. Les politiques de publication des API 
+2.3. Critères de choix d'une API 
+III. Architecture des applications et des API 
+3.1. Architecture client-serveur 
+3.2. Architecture monolithique 
+3.3. Architecture orientée services (SOA) 
+3.4. Architecture microservices 
+3.5. Comparaison des architectures 
+IV. Fonctionnement d'une API Web 
+4.1. Principes de communication sur le Web 
+4.2. Processus d'appel d'une API 
+4.3. Structure d'une requête HTTP 
+4.4. Structure d'une réponse HTTP 
+4.5. Formats d'échange de données 
+V. Protocole HTTP et méthodes de requête 
+5.1. Présentation du protocole HTTP 
+5.2. Les méthodes HTTP 
+VI. Codes de statut HTTP 
+6.1. Présentation des codes de statut 
+6.2. Les cinq catégories de codes HTTP 
+6.4. Gestion des erreurs dans les API 
+VIII. Documentation des API 
+8.1. Importance de la documentation 
+8.2. OpenAPI 
+8.3. Swagger UI 
+8.5. Bonnes pratiques de documentation 
+IX. Introduction au framework FastAPI 
+X. Programmation synchrone et asynchrone 
+10.1. Programmation synchrone 
+10.2. Programmation asynchrone 
+10.3. Comparaison entre synchrone et asynchrone 
+
+===== PAGE 2 =====
+2/2 
+ 
+XI. Sécurité des API : authentification et autorisation 
+11.1. Principes fondamentaux 
+11.2. Mécanismes d'authentification 
+11.3. OAuth2 
+11.4. JSON Web Token (JWT) 
+XII.  Présenter au moins 3 plateformes de déploiement opensource 
+XIII. Références 
+ 
+NB : Installer l’outil de travail VSCode et Postman 
+ 
+Livrables 
+Chaque groupe d’apprenants doit rendre un dossier, nommé obligatoirement  
+p1ia_groupe-num_creation-deploiement-api et contenant, au moins  
+1) un document de synthèse : document pdf plus détaillé (avec du texte) que les autres 
+livrables 
+2) des diapositives avec pour chaque concept : pourquoi, comment et exemple 
+3) des cheatSheets : à trouver sur Internet 
+Modalités de livraison 
+Chaque groupe d’apprenants doit  
+1) uploader le dossier des livrables sur Google Drive 
+2) partager le lien du dossier présent sur le Drive dans le groupe WhatsApp de la classe 

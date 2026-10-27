@@ -1,0 +1,1662 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Document de synthèse - API REST avec FastAPI</title>
+<style>
+  :root{
+    --primary:#0b3d6b; --primary2:#0e6ba8; --accent:#e67e22;
+    --green:#138d75; --red:#b03a2e; --ink:#1f2933; --muted:#5b6b7b;
+    --line:#d8e0e8; --soft:#f4f7fa;
+  }
+  @page{ size:A4; margin:19mm 16mm 18mm 16mm; }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    font-family:'Segoe UI','Calibri',Arial,sans-serif;
+    font-size:10.4pt; line-height:1.5; color:var(--ink);
+    -webkit-print-color-adjust:exact; print-color-adjust:exact;
+  }
+  p{ margin:0 0 6pt 0; text-align:justify; }
+  ul,ol{ margin:2pt 0 8pt 0; padding-left:16pt; }
+  li{ margin-bottom:2.5pt; }
+  strong{ color:#102a43; }
+  a{ color:var(--primary2); text-decoration:none; }
+
+  /* ---------- COUVERTURE ---------- */
+  .cover{
+    height:258mm; position:relative;
+    background:linear-gradient(145deg,#082f54 0%,#0b3d6b 45%,#0e6ba8 100%);
+    color:#fff; border-radius:4mm; padding:22mm 18mm; overflow:hidden;
+  }
+  .cover:before{
+    content:""; position:absolute; width:120mm; height:120mm; border-radius:50%;
+    background:rgba(255,255,255,.06); top:-40mm; right:-35mm;
+  }
+  .cover:after{
+    content:""; position:absolute; width:80mm; height:80mm; border-radius:50%;
+    background:rgba(230,126,34,.18); bottom:-25mm; left:-20mm;
+  }
+  .cover .kicker{
+    display:inline-block; font-size:10pt; letter-spacing:2.5px; text-transform:uppercase;
+    border:1px solid rgba(255,255,255,.45); padding:5px 12px; border-radius:20px;
+    background:rgba(255,255,255,.08); margin-bottom:14mm;
+  }
+  .cover h1{ font-size:31pt; line-height:1.15; margin:0 0 5mm 0; font-weight:700; color:#fff; }
+  .cover h2{ font-size:15pt; font-weight:400; color:#d7e8f7; margin:0 0 18mm 0; line-height:1.35; }
+  .cover .rule{ width:32mm; height:3px; background:var(--accent); margin-bottom:12mm; }
+  .cover .meta{ font-size:10.5pt; color:#e7f1fa; line-height:1.9; position:relative; z-index:1; }
+  .cover .meta b{ color:#fff; }
+  .cover .badge{
+    position:absolute; bottom:20mm; right:18mm; background:var(--accent); color:#1b1205;
+    padding:8px 16px; border-radius:3mm; font-weight:700; font-size:10pt; z-index:1;
+  }
+  .cover .stack{
+    position:absolute; bottom:20mm; left:18mm; font-size:9pt; color:#cfe4f6; z-index:1;
+  }
+
+  /* ---------- TITRES ---------- */
+  h1.section{
+    break-before:page; font-size:20pt; color:var(--primary); margin:0 0 4mm 0;
+    padding-bottom:2.5mm; border-bottom:2.5px solid var(--primary2); line-height:1.2;
+  }
+  h1.section .num{
+    display:inline-block; background:var(--primary); color:#fff; font-size:12pt;
+    padding:1.5mm 3.5mm; border-radius:2mm; margin-right:3mm; vertical-align:2px;
+  }
+  h2{ font-size:13pt; color:var(--primary2); margin:6mm 0 2mm 0; break-after:avoid; }
+  h3{ font-size:11pt; color:var(--primary); margin:4mm 0 1.5mm 0; break-after:avoid; }
+  .lead{ font-size:11pt; color:var(--muted); font-style:italic; margin-bottom:5mm; }
+
+  /* ---------- BLOCS ---------- */
+  .callout{
+    border-left:4px solid var(--primary2); background:var(--soft);
+    padding:3mm 4mm; margin:3mm 0 4mm 0; border-radius:0 2mm 2mm 0;
+    break-inside:avoid; font-size:9.8pt;
+  }
+  .callout .ct{ font-weight:700; text-transform:uppercase; letter-spacing:.6px; font-size:8pt; margin-bottom:1mm; }
+  .callout.why{ border-color:var(--primary2); background:#eef6fc; }
+  .callout.why .ct{ color:var(--primary2); }
+  .callout.how{ border-color:var(--green); background:#eafaf5; }
+  .callout.how .ct{ color:var(--green); }
+  .callout.ex{ border-color:var(--accent); background:#fdf3e7; }
+  .callout.ex .ct{ color:#b35c0b; }
+  .callout.warn{ border-color:var(--red); background:#fdeeee; }
+  .callout.warn .ct{ color:var(--red); }
+  .callout p:last-child, .callout ul:last-child{ margin-bottom:0; }
+
+  table{ width:100%; border-collapse:collapse; margin:2mm 0 5mm 0; font-size:9pt; break-inside:avoid; }
+  thead th{ background:var(--primary); color:#fff; text-align:left; padding:2.2mm 2.5mm; font-weight:600; }
+  tbody td{ border-bottom:1px solid var(--line); padding:2mm 2.5mm; vertical-align:top; }
+  tbody tr:nth-child(even){ background:#f7fafc; }
+  table.compact{ font-size:8.5pt; }
+  table.compact td, table.compact th{ padding:1.5mm 2mm; }
+
+  pre{
+    background:#0f172a; color:#e2e8f0; padding:3.5mm 4mm; border-radius:2mm;
+    font-family:Consolas,'Cascadia Mono',monospace; font-size:8.3pt; line-height:1.45;
+    white-space:pre-wrap; word-break:break-word; margin:2mm 0 4mm 0; break-inside:avoid;
+  }
+  pre .c{ color:#7f9cb5; }
+  pre .k{ color:#7dd3fc; }
+  pre .s{ color:#fcd34d; }
+  code{ font-family:Consolas,'Cascadia Mono',monospace; font-size:8.8pt; background:#eef2f7; color:#a93226; padding:.5px 3px; border-radius:2px; }
+  pre code{ background:none; color:inherit; padding:0; }
+
+  .diagram{
+    display:flex; align-items:center; justify-content:center; gap:3mm; flex-wrap:wrap;
+    margin:3mm 0 5mm 0; padding:4mm; background:var(--soft); border:1px solid var(--line);
+    border-radius:2mm; break-inside:avoid;
+  }
+  .diagram .box{
+    background:#fff; border:1.5px solid var(--primary2); color:var(--primary);
+    padding:2.5mm 3.5mm; border-radius:2mm; font-size:8.8pt; font-weight:600; text-align:center;
+  }
+  .diagram .arrow{ color:var(--accent); font-weight:700; font-size:12pt; }
+
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:4mm; }
+  .card{ background:var(--soft); border:1px solid var(--line); border-radius:2mm; padding:3.5mm; break-inside:avoid; }
+  .card h4{ margin:0 0 1.5mm 0; color:var(--primary); font-size:10pt; }
+  .card p{ font-size:9.4pt; margin-bottom:0; }
+
+  .toc{ break-before:page; }
+  .toc h2{ font-size:18pt; color:var(--primary); border-bottom:2px solid var(--accent); padding-bottom:2mm; }
+  .toc ol{ column-count:2; column-gap:10mm; list-style:none; padding:0; margin-top:4mm; }
+  .toc li{ font-size:9.6pt; margin-bottom:2.6mm; break-inside:avoid; }
+  .toc .n{ color:var(--accent); font-weight:700; display:inline-block; width:8mm; }
+  .toc .sub{ color:var(--muted); font-size:8.6pt; display:block; margin-left:8mm; }
+
+  .meta-table td:first-child{ width:38mm; font-weight:700; color:var(--primary); }
+  .checklist{ list-style:none; padding-left:0; }
+  .checklist li{ padding-left:7mm; position:relative; }
+  .checklist li:before{ content:"\2610"; position:absolute; left:0; color:var(--primary2); font-size:12pt; }
+  .refs li{ font-size:9pt; margin-bottom:3pt; word-break:break-word; }
+  .small{ font-size:8.6pt; color:var(--muted); }
+  .tag{ display:inline-block; background:#e8f1f8; color:var(--primary); border-radius:3px; padding:1px 6px; font-size:8pt; font-weight:600; }
+  .pagebreak{ break-before:page; }
+</style>
+</head>
+<body>
+
+<!-- ================= COUVERTURE ================= -->
+<section class="cover">
+  <div class="kicker">Veille technologique &middot; Livrable 1</div>
+  <h1>Introduction aux API<br>et à l'architecture REST</h1>
+  <h2>Avec FastAPI (Python) &mdash; de la conception<br>au déploiement</h2>
+  <div class="rule"></div>
+  <div class="meta">
+    <b>Groupe :</b> Groupe 1<br>
+    <b>Module :</b> Création et déploiement d'API<br>
+    <b>Document :</b> Synthèse détaillée &mdash; 13 chapitres<br>
+    <b>Date :</b> Octobre 2026
+  </div>
+  <div class="stack">FastAPI &middot; HTTP &middot; REST &middot; OpenAPI &middot; OAuth2 / JWT &middot; Docker</div>
+  <div class="badge">p1ia_groupe-1</div>
+</section>
+
+<!-- ================= PREAMBULE ================= -->
+<section>
+  <h1 class="section"><span class="num">0</span>Avant-propos et objectifs</h1>
+  <p class="lead">Ce document constitue le livrable de synthèse du travail de veille. Il reprend chaque concept du plan, en explique le « pourquoi », le « comment » et l'illustre par un exemple concret, avec un fil rouge : construire et déployer une API REST avec FastAPI.</p>
+
+  <h2>Fiche du livrable</h2>
+  <table class="meta-table">
+    <tbody>
+      <tr><td>Nom du dossier</td><td><code>p1ia_groupe-1_creation-deploiement-api</code></td></tr>
+      <tr><td>Livrables</td><td>1) ce document PDF de synthèse &mdash; 2) <code>diapositives.pptx</code> (pourquoi / comment / exemple) &mdash; 3) quatre cheatSheets PDF</td></tr>
+      <tr><td>Public</td><td>Apprenants en développement web / API, niveau débutant à intermédiaire</td></tr>
+      <tr><td>Prérequis</td><td>Bases de Python, notion de HTTP, VSCode et Postman installés</td></tr>
+      <tr><td>Outils</td><td>Python 3.11+, FastAPI, Uvicorn, Pydantic, Docker, Postman, Git</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Objectifs pédagogiques</h2>
+  <ul>
+    <li><strong>Comprendre</strong> ce qu'est une API, son rôle et les différents styles (REST, SOAP, GraphQL, gRPC).</li>
+    <li><strong>Distinguer</strong> les architectures (client-serveur, monolithe, SOA, microservices) et savoir les comparer.</li>
+    <li><strong>Maîtriser</strong> HTTP : requêtes, réponses, méthodes, codes de statut, formats d'échange.</li>
+    <li><strong>Concevoir</strong> une API REST cohérente : ressources, URIs, versioning, pagination, erreurs.</li>
+    <li><strong>Développer</strong> une API avec FastAPI : validation Pydantic, dépendances, documentation automatique.</li>
+    <li><strong>Sécuriser</strong> l'API : authentification, autorisation, OAuth2, JWT, OWASP API Top 10.</li>
+    <li><strong>Déployer</strong> l'API sur une plateforme open source (Coolify, Dokku, CapRover) avec Docker.</li>
+  </ul>
+
+  <div class="callout why">
+    <div class="ct">Pourquoi ce document est-il plus détaillé ?</div>
+    <p>Le cahier des charges demande un document de synthèse « plus détaillé (avec du texte) que les autres livrables ». Les diapositives servent à présenter, les cheatSheets à réviser : ce PDF sert de référence écrite, avec le raisonnement complet, les tableaux comparatifs et les exemples de code.</p>
+  </div>
+
+  <h2>Fil rouge : l'API « Tâches »</h2>
+  <p>Tout au long du document, nous utilisons un exemple simple et réaliste : une API de gestion de tâches (<em>todo list</em>). Elle expose des ressources <code>/tasks</code>, permet de créer, lire, modifier et supprimer des tâches, et sera sécurisée puis déployée. Ce fil rouge permet de relier la théorie (HTTP, REST) à la pratique (FastAPI, Docker).</p>
+</section>
+
+<!-- ================= SOMMAIRE ================= -->
+<section class="toc">
+  <h2>Sommaire</h2>
+  <ol>
+    <li><span class="n">I.</span> Introduction générale aux API
+      <span class="sub">Définition &middot; rôle &middot; domaines &middot; avantages et limites</span></li>
+    <li><span class="n">II.</span> Classification des API
+      <span class="sub">Styles web &middot; politiques de publication &middot; critères de choix</span></li>
+    <li><span class="n">III.</span> Architecture des applications et des API
+      <span class="sub">Client-serveur &middot; monolithe &middot; SOA &middot; microservices</span></li>
+    <li><span class="n">IV.</span> Fonctionnement d'une API Web
+      <span class="sub">Communication &middot; cycle d'appel &middot; requête &middot; réponse &middot; formats</span></li>
+    <li><span class="n">V.</span> Protocole HTTP et méthodes
+      <span class="sub">HTTP/1.1 &rarr; HTTP/3 &middot; GET, POST, PUT, PATCH, DELETE</span></li>
+    <li><span class="n">VI.</span> Codes de statut HTTP
+      <span class="sub">1xx &agrave; 5xx &middot; gestion des erreurs &middot; RFC 9457</span></li>
+    <li><span class="n">VII.</span> Architecture REST
+      <span class="sub">Contraintes &middot; ressources &middot; HATEOAS &middot; bonnes pratiques</span></li>
+    <li><span class="n">VIII.</span> Documentation des API
+      <span class="sub">OpenAPI &middot; Swagger UI &middot; ReDoc &middot; bonnes pratiques</span></li>
+    <li><span class="n">IX.</span> Introduction à FastAPI
+      <span class="sub">Installation &middot; routes &middot; Pydantic &middot; dépendances &middot; tests</span></li>
+    <li><span class="n">X.</span> Programmation synchrone et asynchrone
+      <span class="sub">Event loop &middot; async/await &middot; pièges &middot; choix</span></li>
+    <li><span class="n">XI.</span> Sécurité : authentification et autorisation
+      <span class="sub">OWASP &middot; OAuth2 &middot; JWT &middot; bonnes pratiques</span></li>
+    <li><span class="n">XII.</span> Plateformes de déploiement open source
+      <span class="sub">Coolify &middot; Dokku &middot; CapRover &middot; Docker</span></li>
+    <li><span class="n">XIII.</span> Références
+      <span class="sub">Documentation officielle, RFC, normes, outils</span></li>
+  </ol>
+  <p class="small" style="margin-top:8mm">Chaque chapitre suit la même logique : <strong>définition &rarr; pourquoi &rarr; comment &rarr; exemple</strong>, afin de faciliter la lecture, la révision et la présentation orale.</p>
+</section>
+
+<!-- ================= I. INTRODUCTION ================= -->
+<section>
+  <h1 class="section"><span class="num">I</span>Introduction générale aux API</h1>
+  <p class="lead">Une API est un contrat qui permet à deux logiciels de communiquer sans connaître leurs implémentations respectives. C'est la brique de base de l'informatique moderne connectée.</p>
+
+  <h2>1.1. Définition d'une API</h2>
+  <p>Une <strong>API</strong> (<em>Application Programming Interface</em>, interface de programmation applicative) est un ensemble de règles, de types de données et de points d'entrée qui permet à un programme d'utiliser les fonctionnalités d'un autre programme. Elle définit <em>ce que</em> l'on peut demander et <em>comment</em> le demander, mais masque <em>comment</em> c'est réalisé à l'intérieur.</p>
+  <p>On peut la comparer au <strong>menu d'un restaurant</strong> : le menu décrit les plats disponibles et la manière de les commander ; il ne décrit ni la cuisine, ni le fournisseur, ni les recettes. Le client (l'application appelante) n'a pas besoin de connaître la cuisine (l'implémentation) pour être servi.</p>
+
+  <div class="grid2">
+    <div class="card">
+      <h4>API locale / bibliothèque</h4>
+      <p>Une classe ou un module que l'on importe dans son propre code (ex. <code>json.dumps()</code>, une bibliothèque de calcul). L'appel se fait en mémoire, dans le même processus.</p>
+    </div>
+    <div class="card">
+      <h4>API Web / distante</h4>
+      <p>Une interface exposée sur le réseau via HTTP (ex. <code>GET https://api.exemple.com/tasks</code>). L'appel traverse le réseau et suit un contrat documenté (OpenAPI, par exemple).</p>
+    </div>
+  </div>
+
+  <h3>Les éléments constitutifs d'une API Web</h3>
+  <table>
+    <thead><tr><th>Élément</th><th>Rôle</th><th>Exemple</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Endpoint</strong></td><td>Adresse d'une opération exposée</td><td><code>GET /api/v1/tasks</code></td></tr>
+      <tr><td><strong>Contrat</strong></td><td>Formats d'entrée/sortie, erreurs, règles</td><td>Schéma OpenAPI 3.1</td></tr>
+      <tr><td><strong>Requête</strong></td><td>Ce que le client envoie</td><td>Méthode, en-têtes, corps JSON</td></tr>
+      <tr><td><strong>Réponse</strong></td><td>Ce que le serveur renvoie</td><td>Code 200, JSON, en-têtes</td></tr>
+      <tr><td><strong>Authentification</strong></td><td>Qui appelle l'API</td><td>Clé API, JWT, OAuth2</td></tr>
+      <tr><td><strong>Quotas / limites</strong></td><td>Protection et équité d'usage</td><td>1 000 requêtes / heure</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout ex">
+    <div class="ct">Exemple concret</div>
+    <p>L'application mobile de la SNCF appelle une API pour obtenir les horaires : elle envoie <code>GET /trains?from=Paris&amp;to=Lyon&amp;date=2026-11-03</code> et reçoit un JSON. Elle ne connaît ni les bases de données, ni les algorithmes de calcul d'itinéraire : elle consomme un contrat.</p>
+  </div>
+
+  <h2>1.2. Rôle et importance des API</h2>
+  <ul>
+    <li><strong>Interopérabilité :</strong> faire dialoguer des technologies hétérogènes (Python, Java, JavaScript, mobile).</li>
+    <li><strong>Découplage :</strong> les équipes évoluent indépendamment tant que le contrat est respecté.</li>
+    <li><strong>Réutilisation :</strong> un service de paiement, d'authentification ou de géolocalisation est partagé par plusieurs produits.</li>
+    <li><strong>Automatisation :</strong> les API permettent l'intégration continue, les workflows, les agents et les scripts.</li>
+    <li><strong>Écosystème et monétisation :</strong> une API publique peut attirer des développeurs et générer des revenus (Stripe, Twilio, OpenWeather).</li>
+    <li><strong>Scalabilité organisationnelle :</strong> les équipes communiquent par contrats plutôt que par réunions ; c'est la base des microservices.</li>
+  </ul>
+
+  <h2>1.3. Domaines d'utilisation</h2>
+  <table>
+    <thead><tr><th>Domaine</th><th>Usage typique de l'API</th></tr></thead>
+    <tbody>
+      <tr><td>Web &amp; mobile</td><td>Application front qui consomme une API back-end (REST/JSON).</td></tr>
+      <tr><td>Cloud &amp; DevOps</td><td>API d'orchestration (Kubernetes), de provisioning (AWS), de CI/CD.</td></tr>
+      <tr><td>Finance / fintech</td><td>Paiement (Stripe), agrégation bancaire (DSP2), vérification KYC.</td></tr>
+      <tr><td>E-commerce</td><td>Catalogue, panier, stock, livraison, places de marché.</td></tr>
+      <tr><td>IoT</td><td>Remontée de capteurs, commande d'objets connectés (MQTT/HTTP).</td></tr>
+      <tr><td>Santé</td><td>Échange de dossiers patients (FHIR), prise de rendez-vous.</td></tr>
+      <tr><td>IA &amp; données</td><td>Inférence de modèles, recherche, recommandation, LLM.</td></tr>
+      <tr><td>Interne / microservices</td><td>Communication entre services d'un même système d'information.</td></tr>
+      <tr><td>Géolocalisation</td><td>Cartes, itinéraires, géocodage (Google Maps, OpenStreetMap).</td></tr>
+      <tr><td>Communication</td><td>E-mail, SMS, notifications push, visioconférence.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>1.4. Avantages et limites des API</h2>
+  <table>
+    <thead><tr><th>Avantages</th><th>Limites / risques</th></tr></thead>
+    <tbody>
+      <tr><td>Standardisation et documentation</td><td>Dépendance à un tiers (indisponibilité, changement de contrat)</td></tr>
+      <tr><td>Découplage des équipes et des technologies</td><td>Complexité de gouvernance et de versioning</td></tr>
+      <tr><td>Réutilisation et gain de temps</td><td>Surface d'attaque supplémentaire à sécuriser</td></tr>
+      <tr><td>Scalabilité horizontale</td><td>Latence réseau et surcoût de sérialisation</td></tr>
+      <tr><td>Écosystème, intégrations, monétisation</td><td>Quotas, coûts variables, rate limiting</td></tr>
+      <tr><td>Observabilité et automatisation</td><td>Nécessite logs, métriques, traces, alerting</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout warn">
+    <div class="ct">À retenir</div>
+    <p>Une API n'est pas seulement technique : c'est un <strong>produit</strong> avec des utilisateurs (développeurs), un contrat, une documentation, un support, des versions et des engagements de service (SLA).</p>
+  </div>
+</section>
+
+<!-- ================= II. CLASSIFICATION ================= -->
+<section>
+  <h1 class="section"><span class="num">II</span>Classification des API</h1>
+  <p class="lead">Toutes les API ne se ressemblent pas : le style technique, la politique de publication et le contexte déterminent des choix très différents.</p>
+
+  <h2>2.1. Les styles et technologies d'API Web</h2>
+
+  <h3>REST (Representational State Transfer)</h3>
+  <p>Style architectural introduit par Roy Fielding en 2000. Il repose sur les ressources identifiées par des URIs, les méthodes HTTP et des représentations (souvent JSON). C'est le style dominant des API publiques.</p>
+  <p><strong>Pourquoi :</strong> simplicité, compatibilité avec le Web, cache HTTP, outillage abondant.<br>
+  <strong>Comment :</strong> ressources au pluriel (<code>/tasks</code>), verbes HTTP, codes de statut, HATEOAS optionnel.<br>
+  <strong>Exemple :</strong> <code>GET /api/v1/tasks/42</code> renvoie <code>200</code> et <code>{"id":42,"title":"..."}</code>.</p>
+
+  <h3>SOAP (Simple Object Access Protocol)</h3>
+  <p>Protocole basé sur XML, avec une enveloppe normalisée, un contrat WSDL et de nombreuses extensions (WS-Security, WS-Addressing). Très utilisé dans les systèmes bancaires et les SI d'entreprise.</p>
+  <p><strong>Pourquoi :</strong> contrats stricts, sécurité et transactions normalisées, interopérabilité d'entreprise.<br>
+  <strong>Comment :</strong> un seul endpoint, opérations décrites dans un WSDL, messages XML.<br>
+  <strong>Exemple :</strong> <code>POST /BankService</code> avec une enveloppe <code>&lt;soap:Envelope&gt;</code> contenant <code>&lt;GetBalance&gt;</code>.</p>
+
+  <h3>GraphQL</h3>
+  <p>Langage de requête et runtime créé par Facebook (2015). Le client demande exactement les champs dont il a besoin, à travers un seul endpoint.</p>
+  <p><strong>Pourquoi :</strong> éviter le sur-fetch et le sous-fetch, agréger plusieurs sources, typage fort du schéma.<br>
+  <strong>Comment :</strong> schéma (<code>type Query</code>), requêtes <code>query</code>, mutations, resolvers.<br>
+  <strong>Exemple :</strong> <code>{ task(id: 42) { title done } }</code> renvoie uniquement les champs demandés.</p>
+
+  <h3>gRPC</h3>
+  <p>Framework RPC de Google basé sur HTTP/2 et Protocol Buffers, avec génération de code client/serveur et support du streaming bidirectionnel.</p>
+  <p><strong>Pourquoi :</strong> performances élevées, contrat binaire compact, streaming, typage fort.<br>
+  <strong>Comment :</strong> fichier <code>.proto</code>, génération de stubs, appels de méthodes distantes.<br>
+  <strong>Exemple :</strong> <code>rpc GetTask(TaskRequest) returns (TaskResponse)</code>.</p>
+
+  <h3>Autres styles</h3>
+  <ul>
+    <li><strong>JSON-RPC / XML-RPC :</strong> appels de procédures simples via HTTP, sans sémantique de ressources.</li>
+    <li><strong>WebSocket :</strong> canal bidirectionnel persistant, adapté au temps réel (chat, jeux, cours boursiers).</li>
+    <li><strong>SSE (Server-Sent Events) :</strong> flux unidirectionnel serveur &rarr; client, simple et compatible HTTP.</li>
+    <li><strong>Webhooks :</strong> le serveur notifie le client via un appel HTTP sortant (événements).</li>
+  </ul>
+
+  <table class="compact">
+    <thead><tr><th>Style</th><th>Transport / format</th><th>Points forts</th><th>Limites</th><th>Cas d'usage</th></tr></thead>
+    <tbody>
+      <tr><td>REST</td><td>HTTP / JSON</td><td>Simple, cache, outillage</td><td>Sur/sous-fetch, temps réel limité</td><td>API publiques, CRUD, mobile</td></tr>
+      <tr><td>SOAP</td><td>HTTP / XML</td><td>Contrats, sécurité, transactions</td><td>Verbeux, lourd, rigide</td><td>Banque, SI d'entreprise</td></tr>
+      <tr><td>GraphQL</td><td>HTTP / JSON</td><td>Requêtes précises, schéma typé</td><td>Cache complexe, coût des requêtes</td><td>Frontends, agrégation</td></tr>
+      <tr><td>gRPC</td><td>HTTP/2 / Protobuf</td><td>Rapide, compact, streaming</td><td>Moins navigateur-friendly</td><td>Microservices internes</td></tr>
+      <tr><td>WebSocket</td><td>TCP / binaire ou texte</td><td>Temps réel bidirectionnel</td><td>Gestion de connexions, scaling</td><td>Chat, jeux, trading</td></tr>
+      <tr><td>Webhooks</td><td>HTTP / JSON</td><td>Événementiel, découplé</td><td>Retries, sécurité des callbacks</td><td>Paiement, CI/CD, SaaS</td></tr>
+    </tbody>
+  </table>
+
+  <h2>2.2. Les politiques de publication des API</h2>
+  <table>
+    <thead><tr><th>Politique</th><th>Public</th><th>Objectif</th><th>Exemple</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Privée / interne</strong></td><td>Équipes de l'organisation</td><td>Découpler les services, réutiliser</td><td>API de catalogue interne</td></tr>
+      <tr><td><strong>Partenaire (B2B)</strong></td><td>Partenaires identifiés</td><td>Intégrations contractuelles</td><td>API bancaire pour un assureur</td></tr>
+      <tr><td><strong>Publique / ouverte</strong></td><td>Tout développeur</td><td>Écosystème, notoriété, revenus</td><td>API météo, paiement Stripe</td></tr>
+      <tr><td><strong>API produit</strong></td><td>Clients de l'entreprise</td><td>Monétisation, self-service</td><td>API de facturation, SaaS</td></tr>
+    </tbody>
+  </table>
+  <p>La politique de publication conditionne la documentation, le niveau de support, les quotas, le modèle d'authentification et les engagements de disponibilité.</p>
+
+  <h2>2.3. Critères de choix d'une API</h2>
+  <ul>
+    <li><strong>Besoins fonctionnels :</strong> CRUD simple, requêtes complexes, temps réel, streaming, événements.</li>
+    <li><strong>Contraintes techniques :</strong> navigateur, mobile, réseau limité, latence, volume, taille des messages.</li>
+    <li><strong>Sécurité :</strong> authentification, autorisation fine, conformité (RGPD, PCI-DSS).</li>
+    <li><strong>Écosystème et compétences :</strong> langages, bibliothèques, outils de test, courbe d'apprentissage.</li>
+    <li><strong>Cache et performance :</strong> cache HTTP, CDN, compression, pagination.</li>
+    <li><strong>Documentation et support :</strong> OpenAPI, exemples, SDK, communauté.</li>
+    <li><strong>Coût total :</strong> développement, exploitation, monitoring, licences.</li>
+    <li><strong>Évolutivité :</strong> versioning, compatibilité ascendante, gouvernance.</li>
+  </ul>
+
+  <div class="callout how">
+    <div class="ct">Méthode de choix</div>
+    <p>Commencer par le besoin métier, puis éliminer les styles incompatibles avec les contraintes dures (navigateur, temps réel, sécurité), puis comparer les options restantes sur le coût et l'écosystème. Pour une API CRUD classique consommée par un front web, <strong>REST + JSON</strong> reste le choix par défaut le plus rationnel.</p>
+  </div>
+</section>
+
+<!-- ================= III. ARCHITECTURES ================= -->
+<section>
+  <h1 class="section"><span class="num">III</span>Architecture des applications et des API</h1>
+  <p class="lead">L'architecture décrit la manière dont les composants d'un système sont organisés, communiquent et évoluent. Le choix conditionne la scalabilité, la résilience et l'organisation des équipes.</p>
+
+  <h2>3.1. Architecture client-serveur</h2>
+  <p>Le <strong>client</strong> (navigateur, mobile, script) envoie une requête ; le <strong>serveur</strong> traite et renvoie une réponse. C'est le modèle de base du Web et de toute API HTTP.</p>
+  <div class="diagram">
+    <div class="box">Client<br><span class="small">navigateur / mobile</span></div>
+    <div class="arrow">&rarr;</div>
+    <div class="box">Requête HTTP<br><span class="small">GET /tasks</span></div>
+    <div class="arrow">&rarr;</div>
+    <div class="box">Serveur<br><span class="small">API + base de données</span></div>
+    <div class="arrow">&rarr;</div>
+    <div class="box">Réponse<br><span class="small">200 + JSON</span></div>
+  </div>
+  <p><strong>Pourquoi :</strong> séparer les responsabilités, permettre des clients multiples, faire évoluer le serveur indépendamment.<br>
+  <strong>Comment :</strong> définir un contrat d'API, gérer l'état côté client ou dans une base, prévoir cache et timeouts.<br>
+  <strong>Exemple :</strong> une application React interroge une API FastAPI ; l'application mobile Android interroge la même API.</p>
+
+  <h2>3.2. Architecture monolithique</h2>
+  <p>Une application unique, déployée comme un seul artefact, contenant toutes les fonctionnalités (interface, logique métier, accès aux données).</p>
+  <ul>
+    <li><strong>Avantages :</strong> simplicité de développement et de déploiement, transactions ACID locales, débogage plus simple, coût initial faible.</li>
+    <li><strong>Inconvénients :</strong> couplage fort, scaling global, déploiements risqués, difficulté à faire évoluer plusieurs équipes, dette technique.</li>
+    <li><strong>Variante recommandée :</strong> le <em>modular monolith</em> (monolithe modulaire), avec des modules bien séparés et des frontières claires, qui prépare une éventuelle extraction en services.</li>
+  </ul>
+  <p><strong>Exemple :</strong> une application de gestion de tâches avec interface serveur, authentification, base de données et export PDF dans un seul projet FastAPI.</p>
+
+  <h2>3.3. Architecture orientée services (SOA)</h2>
+  <p>Des services métier autonomes et réutilisables communiquent via un bus d'intégration (ESB). Les services exposent des contrats (souvent SOAP/WSDL) et sont orchestrés.</p>
+  <ul>
+    <li><strong>Avantages :</strong> réutilisation, gouvernance centralisée, intégration de systèmes hétérogènes.</li>
+    <li><strong>Inconvénients :</strong> ESB centralisé et coûteux, complexité, couplage via le bus, latence, lourdeur de gouvernance.</li>
+    <li><strong>Exemple :</strong> un SI bancaire expose les services « Client », « Compte », « Paiement » via un ESB.</li>
+  </ul>
+
+  <h2>3.4. Architecture microservices</h2>
+  <p>Un système composé de services petits, indépendamment déployables, organisés autour de contextes métier (<em>bounded contexts</em> du DDD), chacun avec ses données et son contrat d'API.</p>
+  <ul>
+    <li><strong>Avantages :</strong> déploiement indépendant, scaling ciblé, autonomie des équipes, choix technologique par service, isolation des pannes.</li>
+    <li><strong>Inconvénients :</strong> complexité distribuée (réseau, latence, pannes partielles), cohérence des données (sagas), observabilité, coût opérationnel, gouvernance des contrats.</li>
+    <li><strong>Patterns clés :</strong> API Gateway, service discovery, circuit breaker, bulkhead, saga, outbox, tracing distribué.</li>
+  </ul>
+  <div class="diagram">
+    <div class="box">Client</div><div class="arrow">&rarr;</div>
+    <div class="box">API Gateway</div><div class="arrow">&rarr;</div>
+    <div class="box">Service Tâches</div><div class="arrow">&harr;</div>
+    <div class="box">Service Auth</div><div class="arrow">&harr;</div>
+    <div class="box">Service Notifications</div>
+  </div>
+  <div class="callout warn">
+    <div class="ct">Erreur fréquente</div>
+    <p>Adopter les microservices trop tôt. Une équipe de deux développeurs avec un domaine mal compris sera plus efficace avec un monolithe modulaire. Les microservices résolvent des problèmes d'<em>organisation</em> et d'<em>échelle</em>, pas des problèmes de code.</p>
+  </div>
+
+  <h2>3.5. Comparaison des architectures</h2>
+  <table class="compact">
+    <thead><tr><th>Critère</th><th>Monolithe</th><th>SOA</th><th>Microservices</th></tr></thead>
+    <tbody>
+      <tr><td>Déploiement</td><td>Unique et simple</td><td>Services + ESB</td><td>Indépendant par service</td></tr>
+      <tr><td>Scaling</td><td>Global</td><td>Par service</td><td>Par service, granulaire</td></tr>
+      <tr><td>Couplage</td><td>Fort</td><td>Moyen (bus)</td><td>Faible (contrats)</td></tr>
+      <tr><td>Cohérence des données</td><td>ACID local</td><td>Transactions distribuées</td><td>Éventuelle (sagas)</td></tr>
+      <tr><td>Complexité opérationnelle</td><td>Faible</td><td>Élevée</td><td>Très élevée</td></tr>
+      <tr><td>Autonomie des équipes</td><td>Faible</td><td>Moyenne</td><td>Forte</td></tr>
+      <tr><td>Coût initial</td><td>Faible</td><td>Élevé</td><td>Moyen à élevé</td></tr>
+      <tr><td>Cas d'usage</td><td>MVP, PME, domaine simple</td><td>SI hétérogène, entreprise</td><td>Grande échelle, équipes multiples</td></tr>
+    </tbody>
+  </table>
+  <p class="small">Règle pragmatique : commencer simple (monolithe modulaire), mesurer les points de douleur, extraire des services seulement lorsqu'un besoin réel le justifie.</p>
+</section>
+
+<!-- ================= IV. FONCTIONNEMENT ================= -->
+<section>
+  <h1 class="section"><span class="num">IV</span>Fonctionnement d'une API Web</h1>
+  <p class="lead">Comprendre le trajet d'une requête, du clic jusqu'à la base de données et retour, est indispensable pour diagnostiquer les erreurs, optimiser les performances et sécuriser l'ensemble.</p>
+
+  <h2>4.1. Principes de communication sur le Web</h2>
+  <ul>
+    <li><strong>URI :</strong> identifie une ressource (<code>https://api.exemple.com/v1/tasks/42</code>).</li>
+    <li><strong>DNS :</strong> traduit le nom de domaine en adresse IP.</li>
+    <li><strong>TCP :</strong> transporte les octets de manière fiable, dans l'ordre.</li>
+    <li><strong>TLS :</strong> chiffre la connexion (HTTPS) et authentifie le serveur via un certificat.</li>
+    <li><strong>HTTP :</strong> protocole de requête/réponse, sans état entre deux requêtes.</li>
+    <li><strong>Intermédiaires :</strong> proxies, API Gateway, load balancer, CDN, reverse proxy (Nginx, Traefik).</li>
+    <li><strong>Stateless :</strong> chaque requête contient tout le contexte nécessaire (token, paramètres) ; l'état métier est stocké côté serveur (base, cache).</li>
+  </ul>
+
+  <h2>4.2. Processus d'appel d'une API</h2>
+  <ol>
+    <li><strong>Résolution DNS</strong> du nom de domaine.</li>
+    <li><strong>Ouverture TCP</strong> (handshake) puis <strong>négociation TLS</strong> (HTTPS).</li>
+    <li><strong>Envoi de la requête HTTP</strong> : méthode, chemin, en-têtes, corps éventuel.</li>
+    <li><strong>Routage</strong> par le serveur ou la passerelle vers le bon endpoint.</li>
+    <li><strong>Validation</strong> des paramètres, de l'authentification et des autorisations.</li>
+    <li><strong>Traitement métier</strong> et accès aux données (base, cache, services externes).</li>
+    <li><strong>Construction de la réponse</strong> : code, en-têtes, corps sérialisé (JSON).</li>
+    <li><strong>Transport retour</strong>, éventuel cache, puis traitement par le client.</li>
+  </ol>
+  <div class="diagram">
+    <div class="box">DNS</div><div class="arrow">&rarr;</div>
+    <div class="box">TCP + TLS</div><div class="arrow">&rarr;</div>
+    <div class="box">HTTP Request</div><div class="arrow">&rarr;</div>
+    <div class="box">Gateway</div><div class="arrow">&rarr;</div>
+    <div class="box">API</div><div class="arrow">&rarr;</div>
+    <div class="box">Base / Cache</div><div class="arrow">&rarr;</div>
+    <div class="box">HTTP Response</div>
+  </div>
+
+  <h2>4.3. Structure d'une requête HTTP</h2>
+  <p>Une requête se compose d'une <strong>ligne de requête</strong>, d'<strong>en-têtes</strong> et d'un <strong>corps</strong> optionnel.</p>
+  <pre>POST /api/v1/tasks HTTP/1.1
+Host: api.exemple.com
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
+User-Agent: MonApp/1.0
+Idempotency-Key: 6f1c2a9e-...
+
+{
+  "title": "Réviser HTTP",
+  "due_date": "2026-11-05",
+  "priority": "high"
+}</pre>
+  <table class="compact">
+    <thead><tr><th>En-tête</th><th>Rôle</th><th>Exemple</th></tr></thead>
+    <tbody>
+      <tr><td><code>Host</code></td><td>Nom du serveur cible (obligatoire en HTTP/1.1)</td><td><code>api.exemple.com</code></td></tr>
+      <tr><td><code>Accept</code></td><td>Format de réponse souhaité</td><td><code>application/json</code></td></tr>
+      <tr><td><code>Content-Type</code></td><td>Format du corps envoyé</td><td><code>application/json</code></td></tr>
+      <tr><td><code>Authorization</code></td><td>Preuve d'identité / de droits</td><td><code>Bearer &lt;token&gt;</code></td></tr>
+      <tr><td><code>Idempotency-Key</code></td><td>Éviter les doublons en cas de retry</td><td>UUID unique</td></tr>
+      <tr><td><code>If-None-Match</code></td><td>Cache conditionnel</td><td><code>"etag-123"</code></td></tr>
+    </tbody>
+  </table>
+
+  <h2>4.4. Structure d'une réponse HTTP</h2>
+  <pre>HTTP/1.1 201 Created
+Content-Type: application/json; charset=utf-8
+Location: /api/v1/tasks/43
+Cache-Control: no-store
+X-Request-Id: 9b2f7c1e
+
+{
+  "id": 43,
+  "title": "Réviser HTTP",
+  "done": false,
+  "created_at": "2026-10-27T09:30:00Z"
+}</pre>
+  <table class="compact">
+    <thead><tr><th>En-tête</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><code>Content-Type</code></td><td>Type MIME du corps (JSON, XML, etc.)</td></tr>
+      <tr><td><code>Content-Length</code></td><td>Taille du corps en octets</td></tr>
+      <tr><td><code>Cache-Control</code></td><td>Politique de cache (<code>no-store</code>, <code>max-age=60</code>)</td></tr>
+      <tr><td><code>ETag</code></td><td>Version de la ressource pour le cache conditionnel</td></tr>
+      <tr><td><code>Location</code></td><td>URI de la ressource créée (avec 201)</td></tr>
+      <tr><td><code>Retry-After</code></td><td>Délai conseillé après un 429 ou 503</td></tr>
+      <tr><td><code>X-Request-Id</code></td><td>Identifiant de corrélation pour le support</td></tr>
+    </tbody>
+  </table>
+
+  <h2>4.5. Formats d'échange de données</h2>
+  <h3>JSON</h3>
+  <p>Format texte léger, lisible, natif en JavaScript. Types de base : objet, tableau, chaîne, nombre, booléen, <code>null</code>. C'est le format par défaut des API REST modernes.</p>
+  <pre>{
+  "id": 43,
+  "title": "Réviser HTTP",
+  "tags": ["api", "rest"],
+  "done": false,
+  "due_date": "2026-11-05",
+  "meta": null
+}</pre>
+  <p class="small">Bonnes pratiques : dates ISO 8601 (<code>2026-11-05T14:30:00Z</code>), identifiants explicites, pas de nombres flottants pour l'argent (utiliser des entiers en centimes ou des chaînes décimales), pas de champs <code>null</code> inutiles, versionner le schéma.</p>
+
+  <h3>XML</h3>
+  <p>Format balisé, verbeux mais très structuré, utilisé par SOAP et certains SI. Il dispose de schémas XSD et de transformations XSLT.</p>
+  <pre>&lt;task id="43"&gt;
+  &lt;title&gt;Réviser HTTP&lt;/title&gt;
+  &lt;done&gt;false&lt;/done&gt;
+  &lt;dueDate&gt;2026-11-05&lt;/dueDate&gt;
+&lt;/task&gt;</pre>
+
+  <h3>Autres formats</h3>
+  <ul>
+    <li><strong>application/x-www-form-urlencoded :</strong> formulaires HTML simples.</li>
+    <li><strong>multipart/form-data :</strong> upload de fichiers + champs.</li>
+    <li><strong>application/octet-stream :</strong> binaire brut (fichier, image).</li>
+    <li><strong>Protocol Buffers :</strong> binaire compact pour gRPC.</li>
+    <li><strong>CSV / Parquet :</strong> exports de données et analytics.</li>
+    <li><strong>YAML :</strong> configuration, spécifications OpenAPI.</li>
+  </ul>
+
+  <div class="callout ex">
+    <div class="ct">Négociation de contenu</div>
+    <p>Le client envoie <code>Accept: application/json</code> ; le serveur répond avec <code>Content-Type: application/json</code>. S'il ne peut pas produire ce format, il renvoie <code>406 Not Acceptable</code>. FastAPI gère cela via les paramètres et les types de réponse.</p>
+  </div>
+</section>
+<!-- ================= V. HTTP ================= -->
+<section>
+  <h1 class="section"><span class="num">V</span>Protocole HTTP et méthodes de requête</h1>
+  <p class="lead">HTTP est le langage commun du Web. Une API REST n'est rien d'autre qu'un ensemble de conventions solides posées sur HTTP.</p>
+
+  <h2>5.1. Présentation du protocole HTTP</h2>
+  <p><strong>HTTP</strong> (<em>HyperText Transfer Protocol</em>) est un protocole de communication client-serveur, textuel dans sa version 1.1, sans état, où chaque échange est une requête suivie d'une réponse. Il est normalisé par l'IETF (RFC 9110 pour la sémantique).</p>
+  <table class="compact">
+    <thead><tr><th>Version</th><th>Transport</th><th>Apports principaux</th></tr></thead>
+    <tbody>
+      <tr><td>HTTP/1.0</td><td>TCP</td><td>Une connexion par requête, en-têtes simples.</td></tr>
+      <tr><td>HTTP/1.1</td><td>TCP</td><td>Connexions persistantes (<em>keep-alive</em>), pipelining, cache, Host obligatoire.</td></tr>
+      <tr><td>HTTP/2</td><td>TCP + TLS (en pratique)</td><td>Multiplexage des flux, compression des en-têtes (HPACK), priorisation, binaire.</td></tr>
+      <tr><td>HTTP/3</td><td>QUIC / UDP</td><td>Réduction de la latence, reprise rapide, meilleure résistance aux pertes.</td></tr>
+    </tbody>
+  </table>
+  <p><strong>Sans état :</strong> le serveur ne mémorise pas automatiquement le contexte entre deux requêtes. L'authentification et les préférences sont donc transmises à chaque appel (token, cookies, paramètres), et l'état métier vit dans une base ou un cache.</p>
+
+  <h2>5.2. Les méthodes HTTP</h2>
+  <p>Les méthodes indiquent l'<strong>intention</strong> de la requête. Elles portent une sémantique normalisée : <em>sûre</em> (pas de modification) et <em>idempotente</em> (le même appel répété produit le même effet).</p>
+  <table>
+    <thead><tr><th>Méthode</th><th>Rôle</th><th>Sûre</th><th>Idempotente</th><th>Corps</th><th>Exemple</th></tr></thead>
+    <tbody>
+      <tr><td><strong>GET</strong></td><td>Lire une ressource ou une collection</td><td>Oui</td><td>Oui</td><td>Non</td><td><code>GET /tasks?done=false</code></td></tr>
+      <tr><td><strong>POST</strong></td><td>Créer une ressource / déclencher un traitement</td><td>Non</td><td>Non</td><td>Oui</td><td><code>POST /tasks</code></td></tr>
+      <tr><td><strong>PUT</strong></td><td>Remplacer intégralement une ressource</td><td>Non</td><td>Oui</td><td>Oui</td><td><code>PUT /tasks/42</code></td></tr>
+      <tr><td><strong>PATCH</strong></td><td>Modifier partiellement une ressource</td><td>Non</td><td>Pas toujours</td><td>Oui</td><td><code>PATCH /tasks/42</code></td></tr>
+      <tr><td><strong>DELETE</strong></td><td>Supprimer une ressource</td><td>Non</td><td>Oui</td><td>Optionnel</td><td><code>DELETE /tasks/42</code></td></tr>
+      <tr><td><strong>HEAD</strong></td><td>Comme GET, sans le corps</td><td>Oui</td><td>Oui</td><td>Non</td><td><code>HEAD /tasks/42</code></td></tr>
+      <tr><td><strong>OPTIONS</strong></td><td>Découvrir les méthodes / CORS</td><td>Oui</td><td>Oui</td><td>Non</td><td><code>OPTIONS /tasks</code></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Idempotence : pourquoi c'est essentiel</h3>
+  <p>Un client peut réessayer une requête après un timeout réseau. Si l'opération est idempotente, un second appel ne crée pas de doublon et ne produit pas d'effet supplémentaire. <code>POST</code> n'étant pas idempotent, on utilise souvent une <strong>clé d'idempotence</strong> : le serveur mémorise la clé et renvoie la même réponse si la requête est rejouée.</p>
+  <pre><span class="c"># Requête initiale</span>
+POST /api/v1/payments
+Idempotency-Key: 8f14e45f-ea5b-4c1a-9f5e-2d7c3b6a1f00
+
+<span class="c"># Retry réseau : même clé = même résultat, pas de double débit</span></pre>
+
+  <h3>Mapping CRUD &harr; HTTP &harr; SQL</h3>
+  <table class="compact">
+    <thead><tr><th>Opération</th><th>HTTP</th><th>URI</th><th>SQL</th><th>Succès</th></tr></thead>
+    <tbody>
+      <tr><td>Lister</td><td>GET</td><td><code>/tasks</code></td><td>SELECT</td><td>200</td></tr>
+      <tr><td>Lire</td><td>GET</td><td><code>/tasks/42</code></td><td>SELECT ... WHERE id=42</td><td>200</td></tr>
+      <tr><td>Créer</td><td>POST</td><td><code>/tasks</code></td><td>INSERT</td><td>201</td></tr>
+      <tr><td>Remplacer</td><td>PUT</td><td><code>/tasks/42</code></td><td>UPDATE (tous champs)</td><td>200 / 204</td></tr>
+      <tr><td>Modifier</td><td>PATCH</td><td><code>/tasks/42</code></td><td>UPDATE (champs partiels)</td><td>200 / 204</td></tr>
+      <tr><td>Supprimer</td><td>DELETE</td><td><code>/tasks/42</code></td><td>DELETE</td><td>204</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout ex">
+    <div class="ct">Exemple : PUT vs PATCH</div>
+    <p><code>PUT /tasks/42</code> avec <code>{"title":"A","done":true}</code> remplace toute la ressource : les champs omis sont réinitialisés ou rejetés. <code>PATCH /tasks/42</code> avec <code>{"done":true}</code> ne modifie que le champ <code>done</code>. Choisir PUT pour une réécriture complète, PATCH pour une mise à jour ciblée.</p>
+  </div>
+
+  <div class="callout warn">
+    <div class="ct">Pièges fréquents</div>
+    <ul>
+      <li>Utiliser <code>GET</code> pour modifier des données (non sûr, cache et robots peuvent le déclencher).</li>
+      <li>Mettre un corps dans <code>GET</code> : non standard, ignoré par certains proxies.</li>
+      <li>Utiliser <code>POST /tasks/42/delete</code> au lieu de <code>DELETE /tasks/42</code>.</li>
+      <li>Utiliser <code>PUT</code> avec un corps partiel : ce n'est pas la sémantique de PUT.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ================= VI. CODES ================= -->
+<section>
+  <h1 class="section"><span class="num">VI</span>Codes de statut HTTP</h1>
+  <p class="lead">Le code de statut est le premier contrat de lecture d'une réponse : il indique si l'appel a réussi, échoué côté client ou côté serveur, et oriente la stratégie de retry.</p>
+
+  <h2>6.1. Présentation des codes de statut</h2>
+  <p>Un code est un nombre à trois chiffres : le premier chiffre indique la <strong>catégorie</strong>, les deux suivants précisent le cas. Le client doit toujours vérifier le code avant de lire le corps de la réponse.</p>
+
+  <h2>6.2. Les cinq catégories de codes HTTP</h2>
+  <table>
+    <thead><tr><th>Catégorie</th><th>Signification</th><th>Codes usuels</th><th>Que doit faire le client ?</th></tr></thead>
+    <tbody>
+      <tr><td><strong>1xx</strong></td><td>Information</td><td>100 Continue, 101 Switching Protocols</td><td>Continuer l'envoi / changer de protocole</td></tr>
+      <tr><td><strong>2xx</strong></td><td>Succès</td><td>200, 201, 202, 204, 206</td><td>Lire la réponse, mettre à jour l'interface</td></tr>
+      <tr><td><strong>3xx</strong></td><td>Redirection</td><td>301, 302, 304, 307, 308</td><td>Suivre la redirection ou utiliser le cache</td></tr>
+      <tr><td><strong>4xx</strong></td><td>Erreur du client</td><td>400, 401, 403, 404, 409, 422, 429</td><td>Corriger la requête, ne pas retenter tel quel</td></tr>
+      <tr><td><strong>5xx</strong></td><td>Erreur du serveur</td><td>500, 502, 503, 504</td><td>Retenter avec backoff, alerter, ne pas blâmer le client</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Codes essentiels à connaître</h3>
+  <table class="compact">
+    <thead><tr><th>Code</th><th>Nom</th><th>Quand l'utiliser</th></tr></thead>
+    <tbody>
+      <tr><td>200</td><td>OK</td><td>Lecture ou mise à jour réussie avec corps.</td></tr>
+      <tr><td>201</td><td>Created</td><td>Création réussie ; ajouter l'en-tête <code>Location</code>.</td></tr>
+      <tr><td>202</td><td>Accepted</td><td>Traitement asynchrone accepté (file d'attente).</td></tr>
+      <tr><td>204</td><td>No Content</td><td>Succès sans corps (DELETE, PATCH vide).</td></tr>
+      <tr><td>206</td><td>Partial Content</td><td>Téléchargement partiel (Range).</td></tr>
+      <tr><td>301 / 308</td><td>Moved Permanently</td><td>Déplacement définitif ; 308 préserve la méthode.</td></tr>
+      <tr><td>304</td><td>Not Modified</td><td>Cache conditionnel : le client réutilise sa copie.</td></tr>
+      <tr><td>400</td><td>Bad Request</td><td>Requête mal formée, JSON invalide.</td></tr>
+      <tr><td>401</td><td>Unauthorized</td><td>Authentification absente ou invalide (en-tête <code>WWW-Authenticate</code>).</td></tr>
+      <tr><td>403</td><td>Forbidden</td><td>Authentifié mais non autorisé.</td></tr>
+      <tr><td>404</td><td>Not Found</td><td>Ressource inexistante (ou masquée volontairement).</td></tr>
+      <tr><td>405</td><td>Method Not Allowed</td><td>Méthode non supportée ; en-tête <code>Allow</code>.</td></tr>
+      <tr><td>409</td><td>Conflict</td><td>Conflit d'état (doublon, version obsolète).</td></tr>
+      <tr><td>415</td><td>Unsupported Media Type</td><td>Content-Type non géré.</td></tr>
+      <tr><td>422</td><td>Unprocessable Content</td><td>Syntaxe correcte mais validation métier échouée.</td></tr>
+      <tr><td>429</td><td>Too Many Requests</td><td>Quota dépassé ; en-tête <code>Retry-After</code>.</td></tr>
+      <tr><td>500</td><td>Internal Server Error</td><td>Bug ou exception non gérée.</td></tr>
+      <tr><td>502 / 504</td><td>Bad Gateway / Gateway Timeout</td><td>Passerelle en erreur ou dépendance trop lente.</td></tr>
+      <tr><td>503</td><td>Service Unavailable</td><td>Maintenance ou surcharge ; <code>Retry-After</code>.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>6.4. Gestion des erreurs dans les API</h2>
+  <p>Une API professionnelle renvoie des erreurs <strong>cohérentes</strong>, <strong>documentées</strong> et <strong>exploitables</strong> par le client. Le standard recommandé est <strong>Problem Details</strong> (RFC 9457), avec le type MIME <code>application/problem+json</code>.</p>
+  <pre>HTTP/1.1 422 Unprocessable Content
+Content-Type: application/problem+json
+
+{
+  "type": "https://api.exemple.com/errors/validation",
+  "title": "Échec de validation",
+  "status": 422,
+  "detail": "Le champ 'due_date' doit être une date future.",
+  "instance": "/api/v1/tasks",
+  "request_id": "9b2f7c1e",
+  "errors": [
+    {"field": "due_date", "message": "date passée", "code": "date_in_future"}
+  ]
+}</pre>
+  <p><strong>Bonnes pratiques :</strong></p>
+  <ul>
+    <li>Un format d'erreur unique pour toute l'API (mêmes champs, même structure).</li>
+    <li>Un code HTTP correct ; ne pas renvoyer 200 avec <code>{"error": ...}</code>.</li>
+    <li>Un message utile pour le développeur, sans divulguer de secrets, de stack traces ni de détails d'infrastructure.</li>
+    <li>Un identifiant de corrélation (<code>request_id</code>) présent dans les logs et la réponse.</li>
+    <li>Documenter les erreurs possibles dans OpenAPI, avec des exemples.</li>
+    <li>Retenter uniquement les erreurs transitoires (429, 502, 503, 504) avec un backoff exponentiel et un jitter.</li>
+  </ul>
+
+  <div class="callout how">
+    <div class="ct">Comment retenter intelligemment</div>
+    <p>Ne jamais retenter un <code>400</code>, <code>401</code>, <code>403</code>, <code>404</code> ou <code>422</code> sans correction. Pour <code>429</code> et <code>5xx</code>, respecter <code>Retry-After</code>, plafonner le nombre d'essais (3 à 5), et utiliser des clés d'idempotence pour les écritures.</p>
+  </div>
+</section>
+
+<!-- ================= VII. REST ================= -->
+<section>
+  <h1 class="section"><span class="num">VII</span>Architecture REST</h1>
+  <p class="lead">REST n'est pas un protocole ni une norme : c'est un style architectural défini par des contraintes. Les respecter produit des API prévisibles, cacheables et évolutives.</p>
+
+  <h2>7.1. Définition et origine</h2>
+  <p><strong>REST</strong> (<em>Representational State Transfer</em>) a été formalisé par <strong>Roy Fielding</strong> dans sa thèse de doctorat en 2000. L'idée centrale : exposer des <strong>ressources</strong> identifiées par des URIs, que les clients manipulent à travers des <strong>représentations</strong> (JSON, XML...), en utilisant l'interface uniforme de HTTP.</p>
+  <p>Une API est dite <em>RESTful</em> lorsqu'elle respecte les contraintes ci-dessous. En pratique, beaucoup d'API dites « REST » sont en réalité « HTTP + JSON orientées ressources » et n'implémentent pas HATEOAS.</p>
+
+  <h2>7.2. Les contraintes REST</h2>
+  <table>
+    <thead><tr><th>Contrainte</th><th>Signification</th><th>Bénéfice</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Client-serveur</strong></td><td>Séparation de l'interface et du stockage/traitement.</td><td>Évolution indépendante des deux côtés.</td></tr>
+      <tr><td><strong>Sans état</strong></td><td>Chaque requête contient tout le contexte nécessaire.</td><td>Scalabilité, reprise après panne, simplicité.</td></tr>
+      <tr><td><strong>Cacheable</strong></td><td>Les réponses indiquent si elles peuvent être mises en cache.</td><td>Réduction de la charge et de la latence.</td></tr>
+      <tr><td><strong>Interface uniforme</strong></td><td>Identification des ressources, manipulation par représentations, messages auto-descriptifs, HATEOAS.</td><td>Prévisibilité, interopérabilité, découplage.</td></tr>
+      <tr><td><strong>Système en couches</strong></td><td>Proxies, gateways, CDN, load balancers intercalés.</td><td>Sécurité, scalabilité, résilience.</td></tr>
+      <tr><td><strong>Code à la demande</strong> (optionnel)</td><td>Le serveur peut envoyer du code exécutable (JS).</td><td>Extensibilité du client.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>7.3. Ressources, URIs et représentations</h2>
+  <ul>
+    <li><strong>Ressource :</strong> un objet ou une collection métier (<code>task</code>, <code>tasks</code>, <code>users</code>).</li>
+    <li><strong>URI :</strong> un nom de ressource, pas une action. On écrit <code>/tasks</code>, pas <code>/getTasks</code>.</li>
+    <li><strong>Représentation :</strong> la forme transmise à un instant donné (JSON), distincte de la ressource elle-même.</li>
+    <li><strong>Nommage :</strong> noms au pluriel, en minuscules, séparés par des tirets (<code>/task-lists</code>), pas de verbes.</li>
+    <li><strong>Hiérarchie :</strong> <code>/users/42/tasks</code> pour les tâches d'un utilisateur ; éviter les imbrications profondes (2 niveaux maximum).</li>
+  </ul>
+
+  <h3>Exemple de conception pour l'API Tâches</h3>
+  <table class="compact">
+    <thead><tr><th>Action</th><th>Méthode + URI</th><th>Réponse</th></tr></thead>
+    <tbody>
+      <tr><td>Lister les tâches</td><td><code>GET /api/v1/tasks?done=false&amp;limit=20&amp;offset=0</code></td><td>200 + tableau + métadonnées de pagination</td></tr>
+      <tr><td>Lire une tâche</td><td><code>GET /api/v1/tasks/42</code></td><td>200 + objet / 404</td></tr>
+      <tr><td>Créer une tâche</td><td><code>POST /api/v1/tasks</code></td><td>201 + objet + <code>Location</code></td></tr>
+      <tr><td>Remplacer une tâche</td><td><code>PUT /api/v1/tasks/42</code></td><td>200 + objet / 404</td></tr>
+      <tr><td>Modifier partiellement</td><td><code>PATCH /api/v1/tasks/42</code></td><td>200 + objet / 404</td></tr>
+      <tr><td>Supprimer</td><td><code>DELETE /api/v1/tasks/42</code></td><td>204 / 404</td></tr>
+      <tr><td>Sous-ressource</td><td><code>GET /api/v1/tasks/42/comments</code></td><td>200 + commentaires</td></tr>
+    </tbody>
+  </table>
+
+  <h2>7.4. HATEOAS et maturité de Richardson</h2>
+  <p><strong>HATEOAS</strong> (<em>Hypermedia As The Engine Of Application State</em>) consiste à inclure dans la réponse les liens vers les actions possibles. Le client découvre les transitions au lieu de coder des URLs en dur.</p>
+  <pre>{
+  "id": 42,
+  "title": "Réviser REST",
+  "done": false,
+  "_links": {
+    "self":   {"href": "/api/v1/tasks/42"},
+    "update": {"href": "/api/v1/tasks/42", "method": "PATCH"},
+    "delete": {"href": "/api/v1/tasks/42", "method": "DELETE"},
+    "owner":  {"href": "/api/v1/users/7"}
+  }
+}</pre>
+  <p>Le <strong>modèle de maturité de Richardson</strong> distingue quatre niveaux :</p>
+  <table class="compact">
+    <thead><tr><th>Niveau</th><th>Caractéristique</th><th>Exemple</th></tr></thead>
+    <tbody>
+      <tr><td>0</td><td>Un seul endpoint, style RPC</td><td><code>POST /api</code> avec une action dans le corps</td></tr>
+      <tr><td>1</td><td>Ressources identifiées par des URIs</td><td><code>/tasks/42</code></td></tr>
+      <tr><td>2</td><td>Verbes HTTP + codes de statut</td><td><code>GET</code>, <code>POST</code>, <code>404</code></td></tr>
+      <tr><td>3</td><td>HATEOAS</td><td>Liens d'actions dans la réponse</td></tr>
+    </tbody>
+  </table>
+  <p class="small">La majorité des API publiques se situent au niveau 2. HATEOAS apporte de la découvrabilité mais complexifie le client et reste peu utilisé en pratique.</p>
+
+  <h2>7.5. Bonnes pratiques de conception REST</h2>
+  <ul>
+    <li><strong>Versionner</strong> l'API : <code>/api/v1/...</code> ou en-tête <code>Accept: application/vnd.api.v1+json</code>.</li>
+    <li><strong>Pagination</strong> systématique des collections : <code>limit</code>/<code>offset</code> ou curseur (<code>cursor</code>), avec métadonnées.</li>
+    <li><strong>Filtrage, tri, recherche</strong> via query params : <code>?status=open&amp;sort=-created_at&amp;q=urgent</code>.</li>
+    <li><strong>Sparse fieldsets</strong> si nécessaire : <code>?fields=id,title,done</code>.</li>
+    <li><strong>Codes de statut corrects</strong> et erreurs normalisées.</li>
+    <li><strong>Idempotence</strong> des écritures sensibles via <code>Idempotency-Key</code>.</li>
+    <li><strong>Cache</strong> : <code>ETag</code>, <code>Cache-Control</code>, <code>Last-Modified</code>.</li>
+    <li><strong>Sécurité</strong> : HTTPS, authn/authz, validation, rate limiting.</li>
+    <li><strong>Documentation</strong> OpenAPI à jour et exemples réalistes.</li>
+    <li><strong>Compatibilité</strong> : ajouter des champs est non cassant ; en supprimer ou renommer est cassant.</li>
+  </ul>
+
+  <div class="callout ex">
+    <div class="ct">Exemple de pagination</div>
+    <pre>GET /api/v1/tasks?limit=20&amp;offset=40
+
+{
+  "items": [ ... ],
+  "total": 137,
+  "limit": 20,
+  "offset": 40,
+  "next": "/api/v1/tasks?limit=20&amp;offset=60",
+  "prev": "/api/v1/tasks?limit=20&amp;offset=20"
+}</pre>
+  </div>
+</section>
+
+<!-- ================= VIII. DOCUMENTATION ================= -->
+<section>
+  <h1 class="section"><span class="num">VIII</span>Documentation des API</h1>
+  <p class="lead">Une API sans documentation est une API que personne n'utilise. La documentation est le contrat visible, la porte d'entrée de l'écosystème et le support de première ligne.</p>
+
+  <h2>8.1. Importance de la documentation</h2>
+  <ul>
+    <li><strong>Contrat :</strong> elle fige les formats, les erreurs et les règles attendues.</li>
+    <li><strong>Onboarding :</strong> un développeur peut intégrer l'API sans appeler l'équipe.</li>
+    <li><strong>Réduction du support :</strong> les questions fréquentes ont une réponse écrite.</li>
+    <li><strong>Tests et génération :</strong> elle permet de générer des clients, des mocks et des tests.</li>
+    <li><strong>Gouvernance :</strong> les évolutions cassantes sont identifiées et versionnées.</li>
+    <li><strong>Découvrabilité :</strong> une API documentée est adoptée plus vite.</li>
+  </ul>
+
+  <h2>8.2. OpenAPI</h2>
+  <p><strong>OpenAPI</strong> (anciennement Swagger Specification) est un standard ouvert pour décrire une API HTTP de façon lisible par un humain et une machine. La version actuelle est <strong>OpenAPI 3.1</strong>, alignée sur JSON Schema 2020-12.</p>
+  <p>Une spécification décrit : les métadonnées (<code>info</code>), les serveurs, les chemins et opérations, les paramètres, les corps de requête, les réponses, les schémas réutilisables (<code>components</code>) et les schémas de sécurité.</p>
+  <pre>openapi: 3.1.0
+info:
+  title: API Tâches
+  version: 1.0.0
+  description: Gestion de tâches - exemple de veille
+servers:
+  - url: https://api.exemple.com/api/v1
+paths:
+  /tasks:
+    get:
+      summary: Lister les tâches
+      parameters:
+        - name: done
+          in: query
+          schema: {type: boolean}
+        - name: limit
+          in: query
+          schema: {type: integer, minimum: 1, maximum: 100, default: 20}
+      responses:
+        "200":
+          description: Liste paginée
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskList"
+    post:
+      summary: Créer une tâche
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/TaskCreate"}
+      responses:
+        "201":
+          description: Tâche créée
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/Task"}
+components:
+  schemas:
+    Task:
+      type: object
+      required: [id, title, done]
+      properties:
+        id: {type: integer, format: int64}
+        title: {type: string, minLength: 1, maxLength: 200}
+        done: {type: boolean, default: false}
+        due_date: {type: string, format: date}
+    TaskCreate:
+      type: object
+      required: [title]
+      properties:
+        title: {type: string, minLength: 1, maxLength: 200}
+        due_date: {type: string, format: date}</pre>
+
+  <h2>8.3. Swagger UI et ReDoc</h2>
+  <p><strong>Swagger UI</strong> transforme une spécification OpenAPI en documentation interactive : on peut parcourir les endpoints, voir les schémas et exécuter des requêtes (« Try it out »). <strong>ReDoc</strong> propose une lecture plus éditoriale, adaptée à la consultation.</p>
+  <p>Avec FastAPI, ces interfaces sont générées automatiquement à partir du code :</p>
+  <table class="compact">
+    <thead><tr><th>URL</th><th>Contenu</th></tr></thead>
+    <tbody>
+      <tr><td><code>/docs</code></td><td>Swagger UI interactif</td></tr>
+      <tr><td><code>/redoc</code></td><td>ReDoc (documentation lisible)</td></tr>
+      <tr><td><code>/openapi.json</code></td><td>Schéma OpenAPI brut (JSON)</td></tr>
+    </tbody>
+  </table>
+
+  <h2>8.5. Bonnes pratiques de documentation</h2>
+  <ul>
+    <li><strong>Une source de vérité :</strong> la spécification OpenAPI générée depuis le code, versionnée avec lui.</li>
+    <li><strong>Des exemples réalistes</strong> pour chaque endpoint, chaque erreur et chaque schéma.</li>
+    <li><strong>Documenter l'authentification</strong> (comment obtenir un token, quels scopes).</li>
+    <li><strong>Documenter les erreurs</strong> : codes, format, causes, remèdes.</li>
+    <li><strong>Un guide de démarrage</strong> (quickstart) et un guide des concepts.</li>
+    <li><strong>Un changelog</strong> et une politique de versioning claire.</li>
+    <li><strong>Documentation-as-code</strong> : relue en pull request, testée en CI (linting Spectral, validation du schéma).</li>
+    <li><strong>SDK et collections Postman</strong> générés depuis la spécification.</li>
+    <li><strong>Accessibilité</strong> : français/anglais selon le public, recherche, navigation claire.</li>
+  </ul>
+
+  <div class="callout how">
+    <div class="ct">Checklist documentation</div>
+    <p>Quickstart &middot; authentification &middot; endpoints &middot; schémas &middot; erreurs &middot; pagination &middot; rate limits &middot; versioning &middot; exemples cURL &middot; statut de service &middot; contact support &middot; conditions d'utilisation.</p>
+  </div>
+</section>
+
+<!-- ================= IX. FASTAPI ================= -->
+<section>
+  <h1 class="section"><span class="num">IX</span>Introduction au framework FastAPI</h1>
+  <p class="lead">FastAPI est un framework Python moderne, rapide et typé, qui génère automatiquement la validation et la documentation. C'est un excellent choix pour apprendre et pour produire.</p>
+
+  <h2>9.1. Pourquoi FastAPI ?</h2>
+  <ul>
+    <li><strong>Performance :</strong> bâti sur Starlette (ASGI) et Pydantic v2 (cœur Rust), proche de Node.js et Go sur les cas simples.</li>
+    <li><strong>Productivité :</strong> les types Python servent à la fois de validation, de sérialisation et de documentation.</li>
+    <li><strong>Moins de bugs :</strong> validation automatique des entrées, erreurs claires.</li>
+    <li><strong>Documentation automatique :</strong> Swagger UI et ReDoc générés depuis le code.</li>
+    <li><strong>Asynchrone natif :</strong> <code>async def</code> et <code>await</code> pour les I/O.</li>
+    <li><strong>Standards :</strong> OpenAPI 3.1 et JSON Schema.</li>
+    <li><strong>Écosystème :</strong> dépendances, sécurité OAuth2/JWT, tests, SQLModel/SQLAlchemy.</li>
+  </ul>
+
+  <h2>9.2. Installation et premier lancement</h2>
+  <pre><span class="c"># Créer un environnement virtuel</span>
+python -m venv .venv
+.venv\Scripts\activate        <span class="c"># Windows</span>
+<span class="c"># source .venv/bin/activate   # macOS / Linux</span>
+
+<span class="c"># Installer FastAPI + serveur + CLI</span>
+pip install "fastapi[standard]"
+
+<span class="c"># Lancer en développement (rechargement automatique)</span>
+fastapi dev main.py
+<span class="c"># ou</span>
+uvicorn main:app --reload --port 8000</pre>
+  <p>La documentation interactive est alors disponible sur <code>http://127.0.0.1:8000/docs</code>.</p>
+
+  <h2>9.3. Structure d'un projet</h2>
+  <pre>app/
+  __init__.py
+  main.py            <span class="c"># création de l'application</span>
+  config.py          <span class="c"># settings (pydantic-settings)</span>
+  models/            <span class="c"># modèles Pydantic / ORM</span>
+    task.py
+  routers/           <span class="c"># routes par domaine</span>
+    tasks.py
+    auth.py
+  dependencies/      <span class="c"># dépendances partagées</span>
+    db.py
+    security.py
+  services/          <span class="c"># logique métier</span>
+  tests/
+    test_tasks.py
+requirements.txt
+Dockerfile</pre>
+
+  <h2>9.4. Une API CRUD complète avec FastAPI</h2>
+  <p>L'exemple ci-dessous implémente l'API Tâches en mémoire (remplaçable par une base de données). Il illustre les routes, les paramètres, Pydantic, les codes de statut, les erreurs et la documentation automatique.</p>
+  <pre>from datetime import date
+from typing import Annotated
+
+from fastapi import FastAPI, HTTPException, Path, Query, status
+from pydantic import BaseModel, Field, ConfigDict
+
+app = FastAPI(
+    title="API Tâches",
+    version="1.0.0",
+    description="API de démonstration pour la veille API/REST",
+)
+
+<span class="c"># ---------- Schémas Pydantic ----------</span>
+class TaskBase(BaseModel):
+    title: str = Field(min_length=1, max_length=200, examples=["Réviser HTTP"])
+    due_date: date | None = None
+
+class TaskCreate(TaskBase):
+    pass
+
+class TaskUpdate(BaseModel):
+    title: str | None = Field(default=None, min_length=1, max_length=200)
+    done: bool | None = None
+    due_date: date | None = None
+
+class Task(TaskBase):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    done: bool = False
+    created_at: date
+
+<span class="c"># ---------- "Base de données" en mémoire ----------</span>
+tasks: dict[int, Task] = {}
+next_id = 1
+
+<span class="c"># ---------- Routes ----------</span>
+@app.get("/api/v1/tasks", response_model=list[Task], tags=["tasks"])
+def list_tasks(
+    done: Annotated[bool | None, Query(description="Filtrer par état")] = None,
+    limit: Annotated[int, Query(ge=1, le=100)] = 20,
+    offset: Annotated[int, Query(ge=0)] = 0,
+):
+    items = list(tasks.values())
+    if done is not None:
+        items = [t for t in items if t.done == done]
+    return items[offset:offset + limit]
+
+@app.get("/api/v1/tasks/{task_id}", response_model=Task, tags=["tasks"])
+def get_task(task_id: Annotated[int, Path(ge=1)]):
+    if task_id not in tasks:
+        raise HTTPException(status_code=404, detail="Tâche introuvable")
+    return tasks[task_id]
+
+@app.post("/api/v1/tasks", response_model=Task,
+          status_code=status.HTTP_201_CREATED, tags=["tasks"])
+def create_task(payload: TaskCreate):
+    global next_id
+    task = Task(id=next_id, created_at=date.today(), **payload.model_dump())
+    tasks[next_id] = task
+    next_id += 1
+    return task
+
+@app.patch("/api/v1/tasks/{task_id}", response_model=Task, tags=["tasks"])
+def update_task(task_id: int, payload: TaskUpdate):
+    if task_id not in tasks:
+        raise HTTPException(status_code=404, detail="Tâche introuvable")
+    current = tasks[task_id]
+    updated = current.model_copy(update=payload.model_dump(exclude_unset=True))
+    tasks[task_id] = updated
+    return updated
+
+@app.delete("/api/v1/tasks/{task_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["tasks"])
+def delete_task(task_id: int):
+    if task_id not in tasks:
+        raise HTTPException(status_code=404, detail="Tâche introuvable")
+    del tasks[task_id]</pre>
+
+  <div class="callout ex">
+    <div class="ct">Ce que FastAPI fait gratuitement</div>
+    <ul>
+      <li>Validation des types et des contraintes (<code>min_length</code>, <code>ge</code>, <code>le</code>).</li>
+      <li>Réponses <code>422</code> détaillées en cas de données invalides.</li>
+      <li>Documentation Swagger UI et ReDoc, avec schémas et exemples.</li>
+      <li>Sérialisation JSON automatique (dates, modèles Pydantic).</li>
+      <li>Injection de dépendances et gestion des erreurs.</li>
+    </ul>
+  </div>
+
+  <h2>9.5. Validation, réponses et erreurs</h2>
+  <pre><span class="c"># Réponse typée : FastAPI filtre les champs non déclarés</span>
+@app.get("/me", response_model=UserPublic)
+def me(user: User = Depends(get_current_user)):
+    return user
+
+<span class="c"># Erreur métier explicite</span>
+raise HTTPException(
+    status_code=status.HTTP_409_CONFLICT,
+    detail="Une tâche avec ce titre existe déjà",
+    headers={"X-Error-Code": "task_duplicate"},
+)
+
+<span class="c"># Gestion globale d'exceptions</span>
+@app.exception_handler(ValueError)
+async def value_error_handler(request, exc):
+    return JSONResponse(status_code=400, content={"detail": str(exc)})</pre>
+
+  <h2>9.6. Dépendances (injection)</h2>
+  <p>Une dépendance est une fonction exécutée avant l'endpoint, dont le résultat est injecté. Elle sert à factoriser l'authentification, l'accès à la base, la pagination ou les permissions.</p>
+  <pre>from fastapi import Depends, Header
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db          <span class="c"># code exécuté après la réponse</span>
+    finally:
+        db.close()
+
+def get_current_user(
+    authorization: Annotated[str, Header()],
+    db: Session = Depends(get_db),
+) -> User:
+    token = authorization.removeprefix("Bearer ").strip()
+    user = decode_and_verify(token, db)
+    if not user:
+        raise HTTPException(401, "Token invalide")
+    return user
+
+@app.get("/api/v1/me")
+def read_me(user: User = Depends(get_current_user)):
+    return user</pre>
+  <p>Les dépendances se composent, se surchargent dans les tests (<code>app.dependency_overrides</code>) et peuvent être asynchrones.</p>
+
+  <h2>9.7. Organisation avec APIRouter</h2>
+  <pre><span class="c"># routers/tasks.py</span>
+from fastapi import APIRouter
+router = APIRouter(prefix="/api/v1/tasks", tags=["tasks"])
+
+@router.get("")
+def list_tasks(): ...
+
+<span class="c"># main.py</span>
+from app.routers import tasks
+app.include_router(tasks.router)</pre>
+
+  <h2>9.8. Tests avec TestClient et pytest</h2>
+  <pre><span class="c"># tests/test_tasks.py</span>
+from fastapi.testclient import TestClient
+from app.main import app
+
+client = TestClient(app)
+
+def test_create_and_get_task():
+    r = client.post("/api/v1/tasks", json={"title": "Test"})
+    assert r.status_code == 201
+    task_id = r.json()["id"]
+
+    r = client.get(f"/api/v1/tasks/{task_id}")
+    assert r.status_code == 200
+    assert r.json()["title"] == "Test"
+
+def test_validation_error():
+    r = client.post("/api/v1/tasks", json={"title": ""})
+    assert r.status_code == 422</pre>
+
+  <div class="callout how">
+    <div class="ct">Bonnes pratiques FastAPI</div>
+    <ul>
+      <li>Découper en routers par domaine, garder <code>main.py</code> mince.</li>
+      <li>Utiliser des modèles Pydantic distincts pour l'entrée, la mise à jour et la sortie.</li>
+      <li>Ne jamais exposer directement les modèles ORM (fuite de champs sensibles).</li>
+      <li>Configurer CORS explicitement, pas avec <code>*</code> en production.</li>
+      <li>Centraliser la configuration avec <code>pydantic-settings</code> et des variables d'environnement.</li>
+      <li>Tester les cas nominaux, les erreurs et les autorisations.</li>
+    </ul>
+  </div>
+</section>
+<!-- ================= X. SYNC / ASYNC ================= -->
+<section>
+  <h1 class="section"><span class="num">X</span>Programmation synchrone et asynchrone</h1>
+  <p class="lead">Une API passe l'essentiel de son temps à attendre : réseau, base de données, fichiers, services externes. Le mode d'exécution détermine sa capacité à servir plusieurs requêtes sans bloquer.</p>
+
+  <h2>10.1. Programmation synchrone</h2>
+  <p>Le code s'exécute <strong>ligne après ligne</strong>. Un appel bloquant (lecture disque, requête SQL, appel HTTP) immobilise le thread jusqu'à la fin de l'opération. Pour traiter plusieurs requêtes, le serveur utilise plusieurs threads ou processus.</p>
+  <pre>import requests
+
+def get_weather(city: str) -> dict:
+    <span class="c"># Bloque le thread jusqu'à la réponse (plusieurs centaines de ms)</span>
+    response = requests.get(f"https://api.meteo.example/{city}", timeout=5)
+    response.raise_for_status()
+    return response.json()
+
+def handler():
+    data = get_weather("Lyon")   <span class="c"># rien d'autre ne s'exécute ici</span>
+    return data</pre>
+  <p><strong>Avantages :</strong> simplicité, compatibilité avec la plupart des bibliothèques, débogage facile.<br>
+  <strong>Inconvénients :</strong> consommation de threads, mauvaise utilisation des I/O, saturation sous forte concurrence.</p>
+
+  <h2>10.2. Programmation asynchrone</h2>
+  <p>Le code utilise une <strong>boucle d'événements</strong> (<em>event loop</em>). Quand une opération d'I/O est lancée avec <code>await</code>, le contrôle est rendu à la boucle qui peut exécuter d'autres tâches ; le résultat est repris lorsque l'opération est terminée. Un seul thread peut ainsi gérer des milliers de connexions en attente.</p>
+  <pre>import asyncio
+import httpx
+
+async def get_weather(city: str) -> dict:
+    <span class="c"># Non bloquant : la boucle peut servir d'autres requêtes pendant l'attente</span>
+    async with httpx.AsyncClient(timeout=5) as client:
+        response = await client.get(f"https://api.meteo.example/{city}")
+        response.raise_for_status()
+        return response.json()
+
+async def handler():
+    <span class="c"># Trois appels exécutés en parallèle</span>
+    lyon, paris, nice = await asyncio.gather(
+        get_weather("Lyon"),
+        get_weather("Paris"),
+        get_weather("Nice"),
+    )
+    return {"lyon": lyon, "paris": paris, "nice": nice}</pre>
+  <p><strong>Avantages :</strong> excellent pour les I/O et les connexions nombreuses, faible empreinte mémoire, latence réduite.<br>
+  <strong>Inconvénients :</strong> complexité, écosystème de bibliothèques inégal, risque de bloquer la boucle avec du code synchrone ou du CPU intensif.</p>
+
+  <h2>10.3. Comparaison entre synchrone et asynchrone</h2>
+  <table>
+    <thead><tr><th>Critère</th><th>Synchrone</th><th>Asynchrone</th></tr></thead>
+    <tbody>
+      <tr><td>Modèle</td><td>Un thread par tâche (ou pool)</td><td>Une boucle d'événements, tâches coopératives</td></tr>
+      <tr><td>I/O</td><td>Bloquant</td><td>Non bloquant (<code>await</code>)</td></tr>
+      <tr><td>Concurrence</td><td>Limitée par les threads</td><td>Très élevée</td></tr>
+      <tr><td>Complexité</td><td>Faible</td><td>Moyenne à élevée</td></tr>
+      <tr><td>CPU intensif</td><td>Adapté (processus/threads)</td><td>À déporter (process pool)</td></tr>
+      <tr><td>Bibliothèques</td><td>Très large</td><td>Nécessite des versions async</td></tr>
+      <tr><td>Cas idéal</td><td>Scripts, CPU, faible concurrence</td><td>API, web, appels réseau, streaming</td></tr>
+    </tbody>
+  </table>
+
+  <h2>10.4. Async dans FastAPI</h2>
+  <p>FastAPI est construit sur ASGI et supporte les deux styles :</p>
+  <ul>
+    <li><code>async def</code> : exécuté dans la boucle d'événements. Utiliser des bibliothèques async (<code>httpx</code>, <code>asyncpg</code>, <code>motor</code>).</li>
+    <li><code>def</code> : exécuté dans un <strong>threadpool</strong> géré par AnyIO. Adapté aux bibliothèques synchrones (<code>requests</code>, <code>psycopg2</code>).</li>
+  </ul>
+  <pre>@app.get("/sync")
+def sync_endpoint():
+    <span class="c"># OK : FastAPI l'exécute dans un threadpool</span>
+    return requests.get("https://api.exemple.com/data").json()
+
+@app.get("/async")
+async def async_endpoint():
+    <span class="c"># OK : bibliothèque async</span>
+    async with httpx.AsyncClient() as client:
+        r = await client.get("https://api.exemple.com/data")
+    return r.json()
+
+@app.get("/bad")
+async def bad_endpoint():
+    <span class="c"># DANGER : requests est bloquant et gèle la boucle d'événements</span>
+    return requests.get("https://api.exemple.com/data").json()</pre>
+
+  <div class="callout warn">
+    <div class="ct">Les pièges de l'async</div>
+    <ul>
+      <li>Appeler une bibliothèque bloquante dans <code>async def</code> : toute l'API ralentit.</li>
+      <li>Faire du calcul lourd (image, cryptographie, ML) dans la boucle : déporter dans un processus.</li>
+      <li>Oublier <code>await</code> : la coroutine n'est jamais exécutée.</li>
+      <li>Créer une session/base par requête sans la fermer : fuite de ressources.</li>
+      <li>Mélanger sync et async sans comprendre le threadpool : comportements imprévisibles.</li>
+    </ul>
+  </div>
+
+  <div class="callout how">
+    <div class="ct">Règle de décision simple</div>
+    <p>I/O et forte concurrence &rarr; <code>async def</code> + bibliothèques async. Bibliothèque uniquement synchrone ou code CPU &rarr; <code>def</code> (threadpool) ou processus séparé. En cas de doute, mesurer avec un test de charge (Locust, k6).</p>
+  </div>
+</section>
+
+<!-- ================= XI. SECURITE ================= -->
+<section>
+  <h1 class="section"><span class="num">XI</span>Sécurité des API : authentification et autorisation</h1>
+  <p class="lead">Sécuriser une API consiste d'abord à répondre à deux questions : qui appelle (authentification) et a-t-il le droit de le faire (autorisation).</p>
+
+  <h2>11.1. Principes fondamentaux</h2>
+  <ul>
+    <li><strong>Confidentialité, intégrité, disponibilité (CIA) :</strong> protéger les données, garantir qu'elles ne sont pas altérées, maintenir le service.</li>
+    <li><strong>Moindre privilège :</strong> chaque utilisateur, service ou token ne reçoit que les droits nécessaires.</li>
+    <li><strong>Défense en profondeur :</strong> plusieurs couches (TLS, auth, validation, rate limiting, logs, WAF).</li>
+    <li><strong>Zéro confiance :</strong> ne jamais faire confiance à l'entrée client, même interne.</li>
+    <li><strong>Échec sécurisé :</strong> en cas d'erreur, refuser l'accès plutôt que l'accorder.</li>
+    <li><strong>Secrets hors du code :</strong> variables d'environnement, coffre-fort (Vault), rotation.</li>
+    <li><strong>Journalisation et audit :</strong> tracer les accès sensibles sans stocker de secrets.</li>
+    <li><strong>Validation systématique :</strong> types, tailles, formats, listes blanches.</li>
+  </ul>
+
+  <h3>OWASP API Security Top 10 (2023)</h3>
+  <table class="compact">
+    <thead><tr><th>#</th><th>Risque</th><th>Exemple / parade</th></tr></thead>
+    <tbody>
+      <tr><td>API1</td><td>Broken Object Level Authorization (BOLA)</td><td><code>/tasks/42</code> accessible à un autre utilisateur &rarr; vérifier la propriété.</td></tr>
+      <tr><td>API2</td><td>Broken Authentication</td><td>Tokens faibles, pas d'expiration &rarr; OAuth2/JWT, MFA, rotation.</td></tr>
+      <tr><td>API3</td><td>Broken Object Property Level Authorization</td><td>Champ <code>role</code> modifiable &rarr; listes blanches de champs.</td></tr>
+      <tr><td>API4</td><td>Unrestricted Resource Consumption</td><td>Pagination absente &rarr; quotas, limites de taille, timeouts.</td></tr>
+      <tr><td>API5</td><td>Broken Function Level Authorization</td><td><code>/admin</code> accessible &rarr; contrôle de rôle par endpoint.</td></tr>
+      <tr><td>API6</td><td>Unrestricted Access to Sensitive Business Flows</td><td>Création massive de comptes &rarr; anti-bot, rate limiting.</td></tr>
+      <tr><td>API7</td><td>Server Side Request Forgery (SSRF)</td><td>URL fournie par le client &rarr; liste blanche de domaines.</td></tr>
+      <tr><td>API8</td><td>Security Misconfiguration</td><td>CORS <code>*</code>, debug activé &rarr; durcissement, en-têtes de sécurité.</td></tr>
+      <tr><td>API9</td><td>Improper Inventory Management</td><td>Versions oubliées &rarr; inventaire, dépréciation, monitoring.</td></tr>
+      <tr><td>API10</td><td>Unsafe Consumption of APIs</td><td>Faire confiance à une API tierce &rarr; valider, timeout, isoler.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>11.2. Mécanismes d'authentification</h2>
+  <table>
+    <thead><tr><th>Mécanisme</th><th>Principe</th><th>Usage</th><th>Limites</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Basic Auth</strong></td><td>Login:mot de passe encodé en Base64</td><td>Outils internes, tests</td><td>Uniquement avec TLS ; pas de logout ; peu granulaire</td></tr>
+      <tr><td><strong>Clé API</strong></td><td>Secret dans un en-tête (<code>X-API-Key</code>)</td><td>APIs serveur à serveur</td><td>Rotation, fuite, pas d'identité utilisateur</td></tr>
+      <tr><td><strong>Session / cookie</strong></td><td>Cookie signé + session serveur</td><td>Applications web</td><td>CSRF, gestion de session, scaling</td></tr>
+      <tr><td><strong>Bearer token</strong></td><td>Token opaque ou JWT dans <code>Authorization</code></td><td>APIs, mobile, SPA</td><td>Vol de token, expiration, révocation</td></tr>
+      <tr><td><strong>OAuth2 / OIDC</strong></td><td>Délégation d'autorisation, identité fédérée</td><td>Google, GitHub, SSO</td><td>Complexité des flows, configuration</td></tr>
+      <tr><td><strong>mTLS</strong></td><td>Certificat client + serveur</td><td>Service mesh, B2B</td><td>Gestion des certificats</td></tr>
+    </tbody>
+  </table>
+
+  <h2>11.3. OAuth2</h2>
+  <p><strong>OAuth2</strong> (RFC 6749) est un cadre d'<strong>autorisation déléguée</strong> : une application (client) obtient un accès limité à une ressource au nom d'un utilisateur, sans connaître son mot de passe. <strong>OpenID Connect (OIDC)</strong> ajoute l'authentification et le profil via un jeton d'identité (ID token).</p>
+  <h3>Les rôles</h3>
+  <ul>
+    <li><strong>Resource Owner :</strong> l'utilisateur qui possède les données.</li>
+    <li><strong>Client :</strong> l'application qui demande l'accès.</li>
+    <li><strong>Authorization Server :</strong> délivre les tokens après authentification et consentement.</li>
+    <li><strong>Resource Server :</strong> l'API qui protège les ressources et valide les tokens.</li>
+  </ul>
+
+  <h3>Les flows principaux</h3>
+  <table class="compact">
+    <thead><tr><th>Flow</th><th>Contexte</th><th>Principe</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Authorization Code + PKCE</strong></td><td>SPA, mobile, web</td><td>Redirection, code échangé contre token ; PKCE protège le code.</td></tr>
+      <tr><td><strong>Client Credentials</strong></td><td>Serveur à serveur</td><td>Le client s'authentifie directement, pas d'utilisateur.</td></tr>
+      <tr><td><strong>Device Code</strong></td><td>TV, CLI, objets connectés</td><td>L'utilisateur valide sur un autre appareil.</td></tr>
+      <tr><td><strong>Refresh Token</strong></td><td>Tous les flows avec utilisateur</td><td>Renouveler l'access token sans redemander le mot de passe.</td></tr>
+      <tr><td>Implicit / Password</td><td>Dépréciés</td><td>À éviter (fuite de token, stockage du mot de passe).</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Exemple de flow Authorization Code + PKCE</h3>
+  <ol>
+    <li>Le client génère un <code>code_verifier</code> aléatoire et son empreinte <code>code_challenge</code>.</li>
+    <li>Redirection vers l'Authorization Server avec <code>client_id</code>, <code>redirect_uri</code>, <code>scope</code>, <code>state</code>, <code>code_challenge</code>.</li>
+    <li>L'utilisateur s'authentifie et consent ; le serveur redirige avec un <code>code</code>.</li>
+    <li>Le client échange le code + <code>code_verifier</code> contre un <code>access_token</code> (et souvent un <code>refresh_token</code>).</li>
+    <li>Le client appelle l'API avec <code>Authorization: Bearer &lt;access_token&gt;</code>.</li>
+    <li>L'API valide la signature, l'expiration, l'audience, l'émetteur et les scopes.</li>
+  </ol>
+  <pre>POST /oauth/token HTTP/1.1
+Host: auth.exemple.com
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=authorization_code
+&amp;code=SplxlOBeZQQYbYS6WxSbIA
+&amp;redirect_uri=https://app.exemple.com/callback
+&amp;client_id=mon-app
+&amp;code_verifier=dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk</pre>
+
+  <h2>11.4. JSON Web Token (JWT)</h2>
+  <p>Un <strong>JWT</strong> (RFC 7519) est un jeton compact et signé, composé de trois parties encodées en Base64URL et séparées par des points :</p>
+  <pre>header.payload.signature
+
+<span class="c"># Header</span>
+{"alg": "RS256", "typ": "JWT", "kid": "2026-10"}
+
+<span class="c"># Payload (claims)</span>
+{
+  "iss": "https://auth.exemple.com",
+  "sub": "user-42",
+  "aud": "api-taches",
+  "exp": 1793520000,
+  "iat": 1793516400,
+  "scope": "tasks:read tasks:write",
+  "role": "user",
+  "jti": "8f14e45f-..."
+}</pre>
+  <p><strong>Signature :</strong> garantit l'intégrité et l'authenticité, pas la confidentialité. Le payload est lisible par tous : ne jamais y mettre de secret, de mot de passe ou de donnée personnelle sensible.</p>
+  <table class="compact">
+    <thead><tr><th>Algorithme</th><th>Type</th><th>Usage</th></tr></thead>
+    <tbody>
+      <tr><td>HS256</td><td>Symétrique (secret partagé)</td><td>Un seul émetteur et un seul vérificateur ; simple mais secret partagé.</td></tr>
+      <tr><td>RS256 / RS512</td><td>Asymétrique (RSA)</td><td>Émetteur signe avec la clé privée, API vérifie avec la clé publique (JWKS).</td></tr>
+      <tr><td>ES256</td><td>Asymétrique (ECDSA)</td><td>Signatures plus courtes, performances intéressantes.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Validation d'un JWT côté API</h3>
+  <ol>
+    <li>Récupérer le token dans l'en-tête <code>Authorization: Bearer ...</code>.</li>
+    <li>Vérifier la signature avec la clé appropriée (JWKS pour les clés asymétriques).</li>
+    <li>Vérifier <code>exp</code> (expiration), <code>nbf</code> (pas avant), <code>iss</code> (émetteur) et <code>aud</code> (audience).</li>
+    <li>Vérifier les scopes/rôles requis pour l'opération.</li>
+    <li>Refuser les algorithmes non attendus (jamais <code>none</code>), limiter le <em>clock skew</em>.</li>
+  </ol>
+  <pre><span class="c"># Exemple avec PyJWT</span>
+import jwt
+from jwt import InvalidTokenError
+
+PUBLIC_KEY = load_public_key()
+
+def decode_token(token: str) -> dict:
+    try:
+        return jwt.decode(
+            token,
+            PUBLIC_KEY,
+            algorithms=["RS256"],
+            audience="api-taches",
+            issuer="https://auth.exemple.com",
+            options={"require": ["exp", "iat", "iss", "aud"]},
+        )
+    except InvalidTokenError as exc:
+        raise HTTPException(status_code=401, detail="Token invalide") from exc</pre>
+
+  <h3>Bonnes pratiques JWT</h3>
+  <ul>
+    <li><strong>Access token court</strong> (5 à 15 min) et <strong>refresh token</strong> plus long, avec rotation et révocation.</li>
+    <li>Stocker les tokens de manière sûre : cookies <code>HttpOnly</code> + <code>Secure</code> + <code>SameSite</code> pour le web, stockage sécurisé natif pour mobile.</li>
+    <li>Ne pas stocker de données sensibles dans le payload.</li>
+    <li>Valider strictement <code>alg</code>, <code>iss</code>, <code>aud</code>, <code>exp</code> ; utiliser les JWKS et le <code>kid</code>.</li>
+    <li>Prévoir une liste de révocation ou un <code>jti</code> pour les tokens critiques.</li>
+    <li>Utiliser HTTPS partout ; jamais de token dans l'URL (fuite par logs et referer).</li>
+  </ul>
+
+  <div class="callout warn">
+    <div class="ct">Vulnérabilités JWT classiques</div>
+    <ul>
+      <li><strong>Algorithme <code>none</code> accepté</strong> : toujours imposer une liste d'algorithmes.</li>
+      <li><strong>Confusion de clé</strong> (HS256 vérifié avec une clé publique) : séparer les types de clés.</li>
+      <li><strong>Absence de vérification de l'audience</strong> : un token destiné à un autre service est accepté.</li>
+      <li><strong>Expiration trop longue</strong> : un token volé reste valide des jours.</li>
+      <li><strong>Stockage en <code>localStorage</code></strong> : exposé au XSS ; préférer des cookies sécurisés.</li>
+    </ul>
+  </div>
+
+  <h2>11.5. Autorisation et bonnes pratiques</h2>
+  <ul>
+    <li><strong>RBAC</strong> (rôles) ou <strong>ABAC</strong> (attributs) selon la granularité nécessaire.</li>
+    <li>Vérifier la propriété de chaque objet (BOLA) : un utilisateur ne lit que ses tâches.</li>
+    <li>Contrôler les fonctions sensibles (admin) séparément des objets.</li>
+    <li>Limiter le débit (rate limiting) et la taille des requêtes.</li>
+    <li>Configurer CORS avec une liste blanche d'origines.</li>
+    <li>Ajouter les en-têtes de sécurité : <code>Strict-Transport-Security</code>, <code>X-Content-Type-Options</code>, <code>Content-Security-Policy</code> (pour les interfaces).</li>
+    <li>Journaliser les événements d'authentification et les accès sensibles.</li>
+    <li>Faire des revues de sécurité et des tests d'intrusion ; scanner les dépendances (<code>pip-audit</code>).</li>
+  </ul>
+</section>
+
+<!-- ================= XII. DEPLOIEMENT ================= -->
+<section>
+  <h1 class="section"><span class="num">XII</span>Plateformes de déploiement open source</h1>
+  <p class="lead">Déployer une API, c'est la rendre accessible, supervisée et reproductible. Les PaaS auto-hébergés open source offrent une expérience proche de Heroku, sur ses propres serveurs.</p>
+
+  <h2>12.1. Trois plateformes open source</h2>
+  <table>
+    <thead><tr><th>Plateforme</th><th>Modèle</th><th>Licence</th><th>Points forts</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Coolify</strong></td><td>PaaS auto-hébergé, Docker</td><td>Apache-2.0</td><td>Interface web complète, Git deploy, Docker Compose, bases de données, SSL automatique, previews.</td></tr>
+      <tr><td><strong>Dokku</strong></td><td>Mini-Heroku, Docker</td><td>MIT</td><td>Très léger, <code>git push</code> deploy, buildpacks, plugins, idéal pour un serveur unique.</td></tr>
+      <tr><td><strong>CapRover</strong></td><td>PaaS sur Docker Swarm</td><td>Apache-2.0</td><td>Interface web, catalogue d'applications one-click, clustering Swarm, Nginx et SSL.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Coolify</h3>
+  <p><strong>Pourquoi :</strong> l'alternative open source la plus complète à Heroku/Vercel, avec une interface moderne et une communauté active.<br>
+  <strong>Comment :</strong> installer sur un VPS via le script officiel, connecter un dépôt Git, définir les variables d'environnement, activer le domaine et le SSL.<br>
+  <strong>Exemple :</strong> déployer le dépôt <code>api-taches</code> ; Coolify construit l'image Docker, lance le conteneur et configure Traefik avec un certificat Let's Encrypt.</p>
+
+  <h3>Dokku</h3>
+  <p><strong>Pourquoi :</strong> minimaliste, rapide à installer, parfait pour un projet pédagogique ou une petite production sur un seul serveur.<br>
+  <strong>Comment :</strong> installer sur Ubuntu, ajouter une clé SSH, créer l'application, ajouter un remote Git et pousser.<br>
+  <strong>Exemple :</strong></p>
+  <pre>dokku apps:create api-taches
+git remote add dokku dokku@mon-serveur:api-taches
+git push dokku main
+dokku config:set api-taches DATABASE_URL=postgres://...</pre>
+
+  <h3>CapRover</h3>
+  <p><strong>Pourquoi :</strong> interface graphique simple, catalogue d'applications (PostgreSQL, Redis, etc.), clustering via Docker Swarm.<br>
+  <strong>Comment :</strong> installer sur un serveur, se connecter à l'interface, créer une application, configurer le déploiement Git ou l'image Docker, activer HTTPS.<br>
+  <strong>Exemple :</strong> créer l'application <code>api-taches</code>, ajouter un domaine, activer « Force HTTPS », déployer depuis GitHub.</p>
+
+  <table class="compact">
+    <thead><tr><th>Critère</th><th>Coolify</th><th>Dokku</th><th>CapRover</th></tr></thead>
+    <tbody>
+      <tr><td>Interface</td><td>Web complète</td><td>CLI</td><td>Web</td></tr>
+      <tr><td>Courbe d'apprentissage</td><td>Moyenne</td><td>Faible</td><td>Faible</td></tr>
+      <tr><td>Docker Compose</td><td>Oui</td><td>Non (plugins)</td><td>Partiel</td></tr>
+      <tr><td>Multi-serveurs</td><td>Oui (limité)</td><td>Via k3s</td><td>Oui (Swarm)</td></tr>
+      <tr><td>SSL automatique</td><td>Oui</td><td>Oui (plugin)</td><td>Oui</td></tr>
+      <tr><td>Idéal pour</td><td>Projets complets</td><td>Petit serveur, Git push</td><td>Débutants, catalogue</td></tr>
+    </tbody>
+  </table>
+
+  <h2>12.2. Déployer FastAPI avec Docker</h2>
+  <p><strong>Pourquoi Docker :</strong> garantir le même environnement du poste de développement à la production, isoler les dépendances et faciliter le déploiement sur n'importe quelle plateforme.</p>
+  <pre><span class="c"># Dockerfile</span>
+FROM python:3.12-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+EXPOSE 8000
+CMD ["fastapi", "run", "app/main.py", "--host", "0.0.0.0", "--port", "8000"]</pre>
+
+  <pre><span class="c"># docker-compose.yml</span>
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+psycopg://app:secret@db:5432/app
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: app
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app"]
+      interval: 5s
+      retries: 10
+
+volumes:
+  pgdata:</pre>
+
+  <h3>Checklist de mise en production</h3>
+  <ul class="checklist">
+    <li>Variables d'environnement et secrets hors du dépôt Git.</li>
+    <li>HTTPS obligatoire, redirection HTTP &rarr; HTTPS.</li>
+    <li>Reverse proxy (Traefik, Nginx, Caddy) et en-têtes de sécurité.</li>
+    <li>Health check <code>/health</code> et redémarrage automatique.</li>
+    <li>Logs structurés, métriques, traces et alerting.</li>
+    <li>Limites de ressources (CPU, mémoire) et rate limiting.</li>
+    <li>Sauvegardes de la base de données et test de restauration.</li>
+    <li>CI/CD : tests, lint, build, déploiement reproductible.</li>
+    <li>Documentation de l'API à jour et versionnée.</li>
+    <li>Plan de rollback et gestion des migrations de schéma.</li>
+  </ul>
+
+  <div class="callout ex">
+    <div class="ct">Exemple de health check FastAPI</div>
+    <pre>@app.get("/health", tags=["ops"])
+def health():
+    return {"status": "ok", "version": app.version}</pre>
+  </div>
+</section>
+
+<!-- ================= XIII. REFERENCES ================= -->
+<section>
+  <h1 class="section"><span class="num">XIII</span>Références</h1>
+  <p class="lead">Sources officielles, normes et ressources utilisées pour ce travail de veille. Les cheatSheets du dossier s'appuient sur ces mêmes sources.</p>
+
+  <h2>Normes et protocoles</h2>
+  <ul class="refs">
+    <li>RFC 9110 &mdash; HTTP Semantics : <a href="https://www.rfc-editor.org/rfc/rfc9110">https://www.rfc-editor.org/rfc/rfc9110</a></li>
+    <li>RFC 9111 &mdash; HTTP Caching : <a href="https://www.rfc-editor.org/rfc/rfc9111">https://www.rfc-editor.org/rfc/rfc9111</a></li>
+    <li>RFC 9112 / 9113 / 9114 &mdash; HTTP/1.1, HTTP/2, HTTP/3</li>
+    <li>RFC 9457 &mdash; Problem Details for HTTP APIs : <a href="https://www.rfc-editor.org/rfc/rfc9457">https://www.rfc-editor.org/rfc/rfc9457</a></li>
+    <li>RFC 6749 &mdash; OAuth 2.0 : <a href="https://www.rfc-editor.org/rfc/rfc6749">https://www.rfc-editor.org/rfc/rfc6749</a></li>
+    <li>RFC 7636 &mdash; PKCE : <a href="https://www.rfc-editor.org/rfc/rfc7636">https://www.rfc-editor.org/rfc/rfc7636</a></li>
+    <li>RFC 7519 &mdash; JSON Web Token : <a href="https://www.rfc-editor.org/rfc/rfc7519">https://www.rfc-editor.org/rfc/rfc7519</a></li>
+    <li>OpenAPI Specification 3.1 : <a href="https://spec.openapis.org/oas/v3.1.0.html">https://spec.openapis.org/oas/v3.1.0.html</a></li>
+    <li>MDN Web Docs &mdash; HTTP : <a href="https://developer.mozilla.org/fr/docs/Web/HTTP">https://developer.mozilla.org/fr/docs/Web/HTTP</a></li>
+  </ul>
+
+  <h2>FastAPI et écosystème Python</h2>
+  <ul class="refs">
+    <li>Documentation FastAPI : <a href="https://fastapi.tiangolo.com/">https://fastapi.tiangolo.com/</a></li>
+    <li>Tutoriel FastAPI : <a href="https://fastapi.tiangolo.com/tutorial/">https://fastapi.tiangolo.com/tutorial/</a></li>
+    <li>Pydantic : <a href="https://docs.pydantic.dev/">https://docs.pydantic.dev/</a></li>
+    <li>Starlette : <a href="https://www.starlette.io/">https://www.starlette.io/</a></li>
+    <li>Uvicorn : <a href="https://www.uvicorn.org/">https://www.uvicorn.org/</a></li>
+    <li>FastAPI Cheat Sheet (Real Python) : <a href="https://realpython.com/cheatsheets/fastapi/">https://realpython.com/cheatsheets/fastapi/</a></li>
+    <li>SQLModel : <a href="https://sqlmodel.tiangolo.com/">https://sqlmodel.tiangolo.com/</a></li>
+    <li>pytest : <a href="https://docs.pytest.org/">https://docs.pytest.org/</a></li>
+  </ul>
+
+  <h2>Sécurité</h2>
+  <ul class="refs">
+    <li>OWASP API Security Top 10 (2023) : <a href="https://owasp.org/API-Security/editions/2023/en/0x11-t10/">https://owasp.org/API-Security/editions/2023/en/0x11-t10/</a></li>
+    <li>OWASP Cheat Sheet Series : <a href="https://cheatsheetseries.owasp.org/">https://cheatsheetseries.owasp.org/</a></li>
+    <li>OAuth 2.0 Security Best Current Practice : <a href="https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics">draft-ietf-oauth-security-topics</a></li>
+    <li>JWT.io : <a href="https://jwt.io/">https://jwt.io/</a></li>
+    <li>PyJWT : <a href="https://pyjwt.readthedocs.io/">https://pyjwt.readthedocs.io/</a></li>
+  </ul>
+
+  <h2>Déploiement et DevOps</h2>
+  <ul class="refs">
+    <li>Coolify : <a href="https://coolify.io/">https://coolify.io/</a> &mdash; <a href="https://github.com/coollabsio/coolify">github.com/coollabsio/coolify</a></li>
+    <li>Dokku : <a href="https://dokku.com/">https://dokku.com/</a> &mdash; <a href="https://github.com/dokku/dokku">github.com/dokku/dokku</a></li>
+    <li>CapRover : <a href="https://caprover.com/">https://caprover.com/</a> &mdash; <a href="https://github.com/caprover/caprover">github.com/caprover/caprover</a></li>
+    <li>Docker : <a href="https://docs.docker.com/">https://docs.docker.com/</a></li>
+    <li>Kubernetes : <a href="https://kubernetes.io/fr/docs/">https://kubernetes.io/fr/docs/</a></li>
+    <li>Postman Learning Center : <a href="https://learning.postman.com/">https://learning.postman.com/</a></li>
+    <li>VSCode : <a href="https://code.visualstudio.com/docs">https://code.visualstudio.com/docs</a></li>
+  </ul>
+
+  <h2>CheatSheets utilisés</h2>
+  <ul class="refs">
+    <li>Awesome Cheatsheets : <a href="https://github.com/LeCoupa/awesome-cheatsheets">https://github.com/LeCoupa/awesome-cheatsheets</a></li>
+    <li>HTTP Status Codes : <a href="https://httpstatuses.io/">https://httpstatuses.io/</a></li>
+    <li>MDN HTTP Status : <a href="https://developer.mozilla.org/fr/docs/Web/HTTP/Status">https://developer.mozilla.org/fr/docs/Web/HTTP/Status</a></li>
+    <li>OWASP Cheat Sheets : <a href="https://cheatsheetseries.owasp.org/">https://cheatsheetseries.owasp.org/</a></li>
+    <li>Real Python FastAPI Cheat Sheet : <a href="https://realpython.com/cheatsheets/fastapi/">https://realpython.com/cheatsheets/fastapi/</a></li>
+  </ul>
+  <p class="small">Les cheatSheets fournis dans le dossier <code>cheatsheets/</code> sont des synthèses originales réalisées à partir de ces sources ; ils ne copient pas les documents tiers.</p>
+</section>
+
+<!-- ================= CONCLUSION ================= -->
+<section>
+  <h1 class="section"><span class="num">&#10003;</span>Conclusion et aide-mémoire</h1>
+  <p class="lead">Une API réussie est un produit : un contrat clair, un protocole bien utilisé, une architecture adaptée, une sécurité sérieuse et un déploiement reproductible.</p>
+
+  <h2>Synthèse en dix points</h2>
+  <ol>
+    <li>Une <strong>API</strong> est un contrat d'interopérabilité, pas seulement du code.</li>
+    <li><strong>REST</strong> = ressources + méthodes HTTP + représentations + sans état + cache.</li>
+    <li>Choisir le <strong>style</strong> (REST, GraphQL, gRPC, SOAP) selon le besoin, pas par mode.</li>
+    <li>L'<strong>architecture</strong> doit suivre l'organisation et l'échelle, pas l'inverse.</li>
+    <li><strong>HTTP</strong> fournit la sémantique : méthodes, codes, en-têtes, cache.</li>
+    <li>Des <strong>erreurs normalisées</strong> (RFC 9457) réduisent le coût d'intégration.</li>
+    <li><strong>OpenAPI + Swagger UI</strong> rendent l'API découvrable et testable.</li>
+    <li><strong>FastAPI</strong> combine types, validation, documentation et performance.</li>
+    <li><strong>OAuth2/JWT</strong> : authentifier, autoriser, valider, expirer, révoquer.</li>
+    <li><strong>Docker + Coolify/Dokku/CapRover</strong> rendent le déploiement reproductible.</li>
+  </ol>
+
+  <h2>Checklist finale du projet</h2>
+  <ul class="checklist">
+    <li>Contrat OpenAPI versionné et documentation à jour.</li>
+    <li>Validation des entrées et erreurs normalisées.</li>
+    <li>Authentification et autorisation testées (BOLA, admin, scopes).</li>
+    <li>Rate limiting, quotas et limites de taille.</li>
+    <li>Logs corrélés, métriques et health check.</li>
+    <li>Tests unitaires et d'intégration, CI verte.</li>
+    <li>Dockerfile reproductible et variables d'environnement documentées.</li>
+    <li>HTTPS, en-têtes de sécurité, secrets protégés.</li>
+    <li>Sauvegardes et procédure de restauration.</li>
+    <li>Guide de démarrage pour les développeurs.</li>
+  </ul>
+
+  <div class="callout why">
+    <div class="ct">Mot de la fin</div>
+    <p>La théorie (HTTP, REST, architectures) donne le vocabulaire ; FastAPI donne les moyens ; la sécurité et le déploiement donnent la crédibilité. C'est la combinaison des trois qui transforme un exercice en API utilisable en production.</p>
+  </div>
+</section>
+
+</body>
+</html>
